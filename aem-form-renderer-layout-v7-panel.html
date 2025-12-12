@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AEM Form Renderer – Form (v7) — with Properties Panel</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f3f4f6; padding: 12px; }
+    /* Force a 590px dialog for the constrained embed environment */
+    .dialog { max-width: 590px; width:100%; margin: 0 auto; background: #ffffff; border-radius: 8px;
+              box-shadow: 0 8px 24px rgba(0,0,0,0.12); display:flex; flex-direction:column; overflow:hidden; }
+    .dialog-header { padding: 8px 12px; background:#222b3c; color:#fff; display:flex; justify-content:space-between; align-items:center; }
+    .dialog-header-title { display:flex; align-items:center; gap:8px; }
+    .dialog-header-title span.icon { width:20px; height:20px; border-radius:3px; background:rgba(255,255,255,0.18);
+                                     display:inline-flex; align-items:center; justify-content:center; font-size:11px; }
+    .dialog-header h2 { margin:0; font-size:16px; font-weight:600; }
+    .dialog-header-actions button { background:none; border:none; color:#fff; cursor:pointer; margin-left:8px; opacity:.75; font-size:14px; }
+    .dialog-header-actions button:hover { opacity:1; }
+    .dialog-tabs { display:flex; border-bottom:1px solid #e0e0e0; background:#fafafa; }
+    .dialog-tab { padding:9px 14px; font-size:13px; cursor:pointer; border-bottom:2px solid transparent; color:#555; }
+    .dialog-tab.active { border-bottom-color:#0f6f94; background:#fff; color:#222; font-weight:600; }
+    .dialog-body { padding:10px 12px 12px; flex:1 1 auto; max-height:500px; overflow-y:auto; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .top-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; gap:12px; flex-wrap:wrap; }
+    .template-group { display:flex; flex-direction:column; font-size:12px; gap:4px; }
+    .template-group label { font-weight:600; color:#333; }
+    .template-group select { padding:4px 6px; font-size:12px; border-radius:4px; border:1px solid #ccc; width:260px; }
+    .layout-density-group { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; font-size:12px; }
+    .mini-group { display:flex; flex-direction:column; gap:4px; }
+    .mini-group label { font-weight:600; color:#333; }
+    .mini-group select { padding:3px 6px; border-radius:4px; border:1px solid #ccc; font-size:12px; }
+    /* layout-grid is a simple vertical stack: Form fields, Properties, Live preview */
+    .layout-grid { display:block; }
+    .panel { border:1px solid #e1e1e1; border-radius:6px; padding:10px; background:#fafafa; margin-bottom:10px; }
+    .panel h3 { margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#555; }
+    .field-row { padding:8px; margin-bottom:6px; border-radius:6px; background:#fff; border:1px solid #e0e0e0; cursor:pointer; }
+    .field-row.selected { box-shadow:0 0 0 2px rgba(15,111,148,0.12); border-color:#0f6f94; }
+    .field-row.drag-over { border-style:dashed; border-color:#0f6f94; background:#f3f9fc; }
+    .field-row-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .field-row-handle { font-size:11px; color:#999; cursor:grab; user-select:none; margin-right:6px; }
+    .field-row-main { display:flex; align-items:center; justify-content:space-between; font-size:12px; }
+    .field-row-main-left { display:flex; align-items:center; gap:6px; min-width:0; }
+    .field-row-label { font-weight:400; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .field-row small { display:block; font-size:11px; color:#666; margin-bottom:4px; }
+    .field-row input[type=text] { width:100%; padding:4px 6px; font-size:12px; margin-bottom:4px;
+                                  border-radius:4px; border:1px solid #ccc; }
+    .field-row textarea { width:100%; padding:4px 6px; font-size:12px; margin-bottom:4px;
+                          border-radius:4px; border:1px solid #ccc; resize:vertical; }
+    .field-row select { width:100%; padding:3px 6px; font-size:12px; margin-bottom:4px;
+                        border-radius:4px; border:1px solid #ccc; }
+    .field-row .row-line { display:flex; gap:6px; align-items:center; font-size:11px; flex-wrap:wrap; }
+    .field-row .row-line label { font-weight:400; }
+    .field-row .row-line .spacer { flex:1 1 auto; }
+    .field-row .kind-label { font-size:10px; color:#999; }
+    .field-row-meta { display:flex; align-items:center; gap:6px; }
+    .field-condition-indicator { display:none; padding:1px 6px; border-radius:999px; background:#fef3c7; color:#92400e; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+    .field-condition-indicator.active { display:inline-flex; }
+    .field-row .meta-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:6px; margin-top:4px; }
+    .options-wrapper { margin-top:6px; border-top:1px dashed #e2e2e2; padding-top:4px; }
+    .options-header { display:flex; justify-content:space-between; align-items:center; font-size:11px; margin-bottom:2px; }
+    .options-list { margin:0; padding:0; list-style:none; }
+    .option-row { display:flex; align-items:center; gap:4px; margin-bottom:3px; }
+    .option-row span.handle { font-size:11px; color:#aaa; }
+    .option-row input[type=text] { flex:1 1 auto; padding:3px 4px; font-size:11px; margin-bottom:0; }
+    .option-row button { border:none; background:none; cursor:pointer; font-size:11px; color:#777; }
+    .options-add { font-size:11px; color:#0f6f94; cursor:pointer; margin-top:2px; }
+    .options-helper { font-size:10px; color:#999; margin-top:2px; }
+    .button-row { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+    .preview-box { background:#f9fafb; border-radius:6px; border:1px dashed #d0d7e2; padding:12px; }
+    .preview-header { font-size:11px; color:#555; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; }
+    .preview-header span.layout-tag { padding:1px 6px; border-radius:999px; background:#e5f3f8; color:#0f6f94;
+                                      font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+    .wizard-nav { display:none; margin-bottom:8px; gap:4px; }
+    .wizard-nav button { border-radius:999px; padding:3px 10px; font-size:11px; border:1px solid #cbd2e1;
+                         background:#fff; cursor:pointer; }
+    .wizard-nav button.active { background:#0f6f94; color:#fff; border-color:#0f6f94; }
+    .form-preview { display:flex; flex-wrap:wrap; margin:-4px; }
+    .form-preview.layout-card { background:#edf2f7; border-radius:12px; padding:16px; border:1px solid #d7e1ef; flex-direction:column; gap:12px; }
+    .form-preview.layout-card .preview-field { flex:0 0 100%; margin-bottom:0; }
+    .card-field .preview-field-inner { background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:16px; box-shadow:0 12px 30px rgba(15,23,42,0.08); }
+    .card-field .preview-field-inner label { font-size:13px; font-weight:600; color:#0f172a; }
+    .preview-field { padding:4px; }
+    .preview-field.full { flex:0 0 100%; }
+    .preview-field.half { flex:0 0 50%; }
+    .preview-field-inner { display:flex; flex-direction:column; }
+    .preview-field-inner label { font-size:12px; margin-bottom:2px; }
+    .preview-field-inner input,
+    .preview-field-inner select,
+    .preview-field-inner textarea { font-size:12px; padding:6px 8px; border-radius:4px; border:1px solid #cbd2e1; }
+    .preview-field-inner small { font-size:10px; color:#777; margin-top:2px; }
+    .conditional-placeholder { border:1px dashed #f59e0b; background:#fff7ed; color:#92400e; font-size:11px; padding:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .conditional-placeholder .conditional-message { font-weight:600; }
+    .conditional-placeholder .conditional-pill { padding:2px 8px; border-radius:999px; border:1px solid #f59e0b; text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
+    .preview-field .conditional-placeholder { display:none; }
+    .preview-field.conditional-hidden .conditional-placeholder { display:flex; }
+    .preview-field.conditional-hidden .preview-field-inner { display:none; }
+    .preview-text { margin:0; }
+    .preview-text.small { font-size:11px; color:#555; }
+    .preview-text.body { font-size:12px; color:#333; }
+    .preview-text.heading { font-size:14px; font-weight:600; margin-bottom:2px; }
+    .step-heading { width:100%; padding:6px 4px 4px; font-size:11px; font-weight:600; text-transform:uppercase; color:#555; }
+    .btn { border-radius:4px; padding:6px 14px; border:none; cursor:pointer; font-size:13px; font-weight:500; }
+    .btn-primary { background:#0f6f94; color:#fff; }
+    .btn-secondary { background:#e5e7eb; color:#111827; }
+    .btn-full { width:100%; margin-top:8px; }
+    .helper { font-size:11px; color:#666; margin-top:4px; }
+    .field-config-empty { font-size:12px; color:#777; padding:4px 0; }
+    .density-compact .preview-field { margin-bottom:4px; }
+    .density-standard .preview-field { margin-bottom:8px; }
+    .density-roomy .preview-field { margin-bottom:14px; }
+    /* properties form typography: match main form field text size */
+    #properties-form label { display:block; font-size:12px; margin-top:6px; font-weight:400; color:#333; }
+    .text-editor-header { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; }
+    .text-editor-label { font-weight:600; font-size:12px; }
+    .text-editor-meta { display:flex; align-items:center; gap:8px; font-size:12px; }
+    .text-editor-toolbar { display:flex; gap:4px; margin-bottom:6px; }
+    .text-editor-toolbar button { border:1px solid #d1d5db; background:#fff; border-radius:4px; padding:4px 10px; font-size:12px; cursor:pointer; }
+    .text-editor-toolbar button:hover { border-color:#0f6f94; }
+    .text-editor-content { min-height:140px; border:1px solid #d1d5db; border-radius:6px; padding:8px; background:#fff; font-size:14px; line-height:1.4; }
+    .text-editor-content:focus { outline:2px solid #0f6f94; }
+    .text-editor-controls { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; flex-wrap:wrap; }
+    .align-controls-wrapper { display:flex; flex-direction:column; gap:4px; }
+    .align-label { font-size:11px; color:#555; }
+    .align-controls { display:flex; gap:4px; }
+    .align-btn { border:1px solid #d1d5db; background:#fff; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:12px; }
+    .align-btn.active { border-color:#0f6f94; color:#0f6f94; font-weight:600; }
+    .text-editor-link-status { font-size:11px; color:#555; margin-top:4px; }
+    .link-modal { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; padding:12px; z-index:10; }
+    .link-modal-content { background:#fff; border-radius:8px; padding:16px 20px; width:320px; box-shadow:0 20px 40px rgba(0,0,0,0.15); }
+    .link-modal-header { display:flex; justify-content:space-between; align-items:center; font-weight:600; margin-bottom:12px; }
+    .link-modal-close { border:none; background:none; font-size:18px; cursor:pointer; }
+    .link-modal-label { display:block; font-size:12px; margin-top:8px; }
+    .link-modal-label input,
+    .link-modal-label select { width:100%; margin-top:4px; border:1px solid #d1d5db; border-radius:4px; padding:6px 8px; font-size:12px; }
+    .link-modal-buttons { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+    .link-modal-buttons button { padding:6px 12px; border-radius:4px; font-size:12px; }
+    .text-editor-meta { display:flex; align-items:center; gap:8px; font-size:12px; margin-bottom:6px; }
+    .text-editor-toolbar { display:flex; gap:4px; margin-bottom:6px; }
+    .text-editor-toolbar button { border:1px solid #d1d5db; background:#fff; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; }
+    .text-editor-toolbar button:hover { border-color:#0f6f94; }
+    .text-editor-content { min-height:120px; border:1px solid #d1d5db; border-radius:6px; padding:8px; background:#fff; font-size:14px; line-height:1.4; }
+    .text-editor-content:focus { outline:2px solid #0f6f94; }
+    .text-editor-controls { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap; }
+    .align-controls { display:flex; gap:4px; }
+    .align-btn { border:1px solid #d1d5db; background:#fff; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:12px; }
+    .align-btn.active { border-color:#0f6f94; color:#0f6f94; font-weight:600; }
+    .text-editor-link { display:flex; gap:6px; flex:1; }
+    .text-editor-link input { flex:1; border:1px solid #d1d5db; border-radius:4px; padding:4px 6px; font-size:12px; }
+    .text-editor-link button { border:none; background:#0f6f94; color:#fff; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:12px; }
+    #properties-form input[type=text], #properties-form select, #properties-form textarea {
+      width:100%; padding:4px; margin-top:3px; border-radius:4px; border:1px solid #ccc; font-size:12px;
+    }
+    #prop-html-readonly,
+    #prop-type-readonly {
+      background:#f4f5f7; color:#555; cursor:not-allowed; border:1px solid #cfd5e3;
+    }
+    #properties-form .small { font-size:10px; color:#666; margin-top:6px; }
+    .condition-action-row { display:flex; align-items:center; gap:6px; margin-top:6px; }
+    .condition-action-row select { border:1px solid #d1d5db; border-radius:4px; padding:4px 8px; font-size:12px; }
+    .condition-row { display:flex; align-items:center; gap:6px; margin-top:6px; flex-wrap:nowrap; min-width:0; width:100%; }
+    .condition-row-content { display:flex; gap:6px; align-items:center; flex:1 1 auto; flex-wrap:nowrap; min-width:0; overflow:hidden; }
+    #properties-form .condition-row-content select,
+    #properties-form .condition-row-content input { border:1px solid #d1d5db; border-radius:4px; padding:4px 8px; font-size:12px; flex:0 1 150px; min-width:110px; max-width:180px; width:auto; }
+    .condition-row-content .condition-value { flex:1 1 120px; min-width:110px; max-width:180px; }
+    .condition-row-content .condition-delete { flex:0 0 auto; }
+    .condition-connector { margin-right:2px; flex:0 0 auto; }
+    .condition-connector select { border:1px solid #d1d5db; border-radius:4px; padding:4px 8px; font-size:12px; background:#fff; }
+    #prop-conditions-section { margin-top:12px; }
+    .condition-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .condition-toggle { border:1px solid #d1d5db; border-radius:999px; padding:4px 12px; background:#fff; font-size:12px; font-weight:600; cursor:pointer; color:#555; }
+    .condition-toggle.on { background:#0f6f94; border-color:#0f6f94; color:#fff; }
+    .condition-toggle:disabled { opacity:0.4; cursor:not-allowed; }
+    .panel-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .panel-header h3 { margin:0; }
+    .panel-toggle { border:1px solid #d1d5db; border-radius:999px; padding:4px 12px; background:#fff; font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; cursor:pointer; color:#555; transition:border-color 120ms ease, color 120ms ease, background 120ms ease; }
+    .panel-toggle:hover { border-color:#0f6f94; color:#0f6f94; }
+    .panel-toggle:focus-visible { outline:2px solid #0f6f94; outline-offset:2px; }
+    .field-panel-body { margin-top:8px; overflow:hidden; max-height:2000px; opacity:1; transition:max-height 220ms ease, opacity 200ms ease, margin-top 200ms ease; }
+    .field-panel-body.collapsed { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
+    /* inline properties form when moved under a field row */
+    #properties-form.inline-properties { background:#fff; border:1px solid #e9ecef; padding:8px; border-radius:6px; margin-top:8px; }
+    #properties-form.inline-properties .form-properties-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#555; margin-bottom:6px; }
+    /* collapse/expand behavior for the properties panel still present but less relevant when inline */
+    .properties-panel { overflow:hidden; max-height:120px; transition:max-height 220ms ease, padding 220ms ease; }
+    .properties-panel.expanded { max-height:1200px; }
+    /* narrow mode for constrained container widths (e.g. 590px) */
+    .layout-grid.narrow { display:block; }
+    .layout-grid.narrow .panel { padding:8px; }
+    .layout-grid.narrow .helper { display:none; }
+    .layout-grid.narrow .preview-box { padding:8px; }
+    .form-meta-panel { border:1px solid #e5e7eb; background:#f9fafb; border-radius:8px; padding:14px; margin:18px 0; }
+    .form-meta-panel-head h4 { margin:0; font-size:14px; }
+    .form-meta-helper { font-size:11px; color:#666; margin:4px 0 0; }
+    .form-meta-grid { display:flex; flex-direction:column; gap:16px; margin-top:12px; }
+    .form-meta-field label { font-size:12px; font-weight:400; color:#333; }
+    .required-indicator { color:#b91c1c; font-weight:600; margin-left:4px; }
+    .form-meta-field { width:100%; }
+    .meta-input-row { display:flex; gap:8px; margin-top:4px; }
+    .meta-input-row input { flex:1; }
+    .meta-input-row-error input { border-color:#dc2626; box-shadow:0 0 0 1px rgba(220,38,38,0.15); }
+    .meta-chip-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; min-height:24px; }
+    .meta-chip { display:inline-flex; align-items:center; gap:6px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:999px; font-size:11px; font-weight:500; padding:4px 10px; color:#1e1b4b; }
+    .meta-chip-remove { border:none; background:none; cursor:pointer; font-size:12px; color:#4338ca; line-height:1; padding:0; }
+    .meta-chip-remove:hover { color:#312e81; }
+    .meta-error { font-size:11px; color:#b91c1c; }
+    .existing-field-modal { position:fixed; inset:0; background:rgba(15,15,30,0.55); display:flex; align-items:center; justify-content:center; padding:24px; z-index:20; }
+    .existing-field-modal-content { width:520px; max-height:80vh; overflow:auto; background:#fff; border-radius:10px; box-shadow:0 20px 45px rgba(0,0,0,0.25); padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+    .existing-field-modal-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    .existing-field-modal-header span { font-size:16px; font-weight:600; color:#111; }
+    .existing-field-modal-subtitle { margin:4px 0 0; font-size:12px; color:#555; }
+    .existing-field-modal-close { border:none; background:none; font-size:20px; cursor:pointer; line-height:1; color:#555; }
+    .existing-field-modal-body { display:flex; flex-direction:column; gap:18px; }
+    .existing-field-group h5 { margin:0 0 6px; font-size:13px; color:#0f172a; }
+    .existing-field-list { display:flex; flex-direction:column; gap:8px; }
+    .existing-field-item { border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .existing-field-item.disabled { opacity:0.5; }
+    .existing-field-item-details { display:flex; flex-direction:column; gap:2px; }
+    .existing-field-item-title { font-size:13px; font-weight:600; color:#111; }
+    .existing-field-item-meta { font-size:11px; color:#555; }
+    .existing-field-item button { white-space:nowrap; }
+     @media (max-width:1200px){ .layout-grid{ display:block; }}
+   </style>
+ </head>
+ <body>
+<div class="dialog">
+  <div class="dialog-header">
+    <div class="dialog-header-title">
+      <span class="icon">≡</span>
+      <h2>Form Details Renderer</h2>
+    </div>
+    <div class="dialog-header-actions">
+      <button>✕</button>
+      <button>✓</button>
+    </div>
+  </div>
+
+  <div class="dialog-tabs">
+    <div class="dialog-tab active" data-tab="form">Form</div>
+    <div class="dialog-tab" data-tab="details">Details</div>
+    <div class="dialog-tab" data-tab="design">Design</div>
+    <div class="dialog-tab" data-tab="confirmation">Confirmation</div>
+    <div class="dialog-tab" data-tab="hidden">Additional Hidden Fields</div>
+  </div>
+
+  <div class="dialog-body">
+
+    <div class="tab-panel" id="tab-details">
+      <div class="helper">Details tab would hold title, intro copy, phone label, etc. (unchanged from today).</div>
+      <div class="form-meta-panel">
+        <div class="form-meta-panel-head">
+          <div>
+            <h4>Routing information</h4>
+            <p class="form-meta-helper">Template defaults load automatically. Remove to override with a custom value. All fields are required.</p>
+          </div>
+        </div>
+        <div class="form-meta-grid">
+          <div class="form-meta-field" data-meta-field="eloquaName">
+            <label for="meta-eloqua-input">Eloqua Form HTML Name <span class="required-indicator">*</span></label>
+            <div class="meta-input-row">
+              <input id="meta-eloqua-input" type="text" placeholder="Enter Eloqua HTML name" aria-required="true" />
+              <button type="button" class="btn btn-secondary meta-add-btn" data-meta-key="eloquaName">Add</button>
+            </div>
+            <div class="meta-chip-list" id="meta-eloqua-chips"></div>
+          </div>
+          <div class="form-meta-field" data-meta-field="salesforceCampaignId">
+            <label for="meta-salesforce-campaign-input">Salesforce Campaign ID <span class="required-indicator">*</span></label>
+            <div class="meta-input-row">
+              <input id="meta-salesforce-campaign-input" type="text" placeholder="Enter Salesforce Campaign ID" aria-required="true" />
+              <button type="button" class="btn btn-secondary meta-add-btn" data-meta-key="salesforceCampaignId">Add</button>
+            </div>
+            <div class="meta-chip-list" id="meta-salesforce-campaign-chips"></div>
+          </div>
+          <div class="form-meta-field" data-meta-field="salesforceNotes">
+            <label for="meta-salesforce-notes-input">Salesforce Lead/Task Notes <span class="required-indicator">*</span></label>
+            <div class="meta-input-row">
+              <input id="meta-salesforce-notes-input" type="text" placeholder="Enter default notes" aria-required="true" />
+              <button type="button" class="btn btn-secondary meta-add-btn" data-meta-key="salesforceNotes">Add</button>
+            </div>
+            <div class="meta-chip-list" id="meta-salesforce-notes-chips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel active" id="tab-form">
+      <div class="helper" style="margin-bottom:8px;">
+        Choose the global form to render, then adjust layout, steps, and field settings for this page instance.
+      </div>
+      <div class="top-row">
+        <div class="template-group">
+          <label for="form-template">Form template</label>
+          <select id="form-template">
+            <option value="contact" selected>NA-US-BIS-Contact-Form</option>
+            <option value="download">NA-US-BIS-Download-Resource</option>
+          </select>
+          <div class="helper">
+            Choosing a template loads its global fields below. Changes you make apply only to this page’s instance.
+          </div>
+        </div>
+        <div class="layout-density-group">
+          <div class="mini-group">
+            <label for="layoutType">Form layout</label>
+            <select id="layoutType">
+              <option value="single" selected>Single-step form</option>
+              <option value="wizard">Multi-step (wizard)</option>
+              <option value="card">Card-based layout</option>
+            </select>
+          </div>
+          <div class="mini-group" id="numStepsGroup">
+            <label for="numSteps">Steps</label>
+            <select id="numSteps">
+              <option value="2">2 steps</option>
+              <option value="3" selected>3 steps</option>
+              <option value="4">4 steps</option>
+            </select>
+          </div>
+          <div class="mini-group">
+            <label for="density">Density</label>
+            <select id="density">
+              <option value="compact">Compact</option>
+              <option value="standard" selected>Standard</option>
+              <option value="roomy">Roomy</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="layout-grid">
+        <div class="panel" id="field-panel">
+          <div class="panel-header">
+            <h3>Form fields</h3>
+            <button id="field-panel-toggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="field-panel-body">Collapse</button>
+          </div>
+          <div id="field-panel-body" class="field-panel-body">
+            <div id="field-config"></div>
+            <div class="button-row">
+              <button id="add-existing-field" class="btn btn-secondary">Add existing field</button>
+              <button id="add-field" class="btn btn-secondary">Quick add field</button>
+              <button id="add-text" class="btn btn-secondary">Add text block</button>
+              <button id="refresh" class="btn btn-secondary">Refresh preview</button>
+            </div>
+            <div class="helper">
+              Drag rows to reorder. Click a field to edit its properties inline below that field.
+            </div>
+          </div>
+        </div>
+
+        <!-- Properties form is kept hidden in the DOM for inline use only -->
+        <div id="properties-form" style="display:none;">
+          <div class="form-properties-title">Field properties</div>
+
+          <div id="prop-label-wrapper">
+            <label for="prop-label">Text</label>
+            <input id="prop-label" type="text" />
+          </div>
+
+          <div id="prop-rich-editor-wrapper" style="display:none;">
+            <div class="text-editor-header">
+              <label class="text-editor-label" for="prop-text-editor">Text</label>
+              <div class="text-editor-meta">
+                <label for="prop-font-size">Font size</label>
+                <select id="prop-font-size">
+                  <option value="small">Small</option>
+                  <option value="body" selected>Body</option>
+                  <option value="heading">Heading</option>
+                </select>
+              </div>
+            </div>
+            <div class="text-editor-toolbar">
+              <button type="button" data-command="bold" title="Bold">B</button>
+              <button type="button" data-command="italic" title="Italic">I</button>
+              <button type="button" data-command="underline" title="Underline">U</button>
+              <button type="button" data-command="strikeThrough" title="Strikethrough">S</button>
+              <button type="button" data-command="insertUnorderedList" title="Bulleted list">• List</button>
+            </div>
+            <div id="prop-text-editor" contenteditable="true" class="text-editor-content" aria-multiline="true" tabindex="0"></div>
+            <div class="text-editor-controls">
+              <div class="align-controls-wrapper">
+                <span class="align-label">Align</span>
+                <div class="align-controls">
+                  <button type="button" class="align-btn active" data-align="left" title="Align left">L</button>
+                  <button type="button" class="align-btn" data-align="center" title="Align center">C</button>
+                  <button type="button" class="align-btn" data-align="right" title="Align right">R</button>
+                </div>
+              </div>
+              <button id="prop-insert-link" type="button">Insert link</button>
+            </div>
+            <div class="text-editor-link-status">
+              <span id="prop-link-status">No link inserted</span>
+            </div>
+            <input id="prop-url" type="hidden" value="" />
+            <input id="prop-align" type="hidden" value="left" />
+            <input id="prop-link-target" type="hidden" value="_blank" />
+          </div>
+
+          <div id="field-controls">
+            <!-- Field-only controls (hidden for text blocks) -->
+            <label for="prop-html">HTML name</label>
+            <select id="prop-html">
+              <option value="">Select mapping…</option>
+              <option value="other1">other1</option>
+              <option value="other2">other2</option>
+              <option value="other3">other3</option>
+              <option value="other4">other4</option>
+              <option value="other5">other5</option>
+              <option value="other6">other6</option>
+              <option value="other7">other7</option>
+              <option value="other8">other8</option>
+              <option value="other9">other9</option>
+              <option value="other10">other10</option>
+              <option value="other11">other11</option>
+              <option value="other12">other12</option>
+              <option value="other13">other13</option>
+              <option value="other14">other14</option>
+              <option value="other15">other15</option>
+              <option value="other16">other16</option>
+              <option value="other17">other17</option>
+              <option value="other18">other18</option>
+              <option value="other19">other19</option>
+              <option value="other20">other20</option>
+              <option value="other21">other21</option>
+              <option value="other22">other22</option>
+              <option value="other23">other23</option>
+              <option value="other24">other24</option>
+              <option value="other25">other25</option>
+              <option value="other26">other26</option>
+              <option value="other27">other27</option>
+              <option value="other28">other28</option>
+              <option value="other29">other29</option>
+              <option value="other30">other30</option>
+              <option value="other31">other31</option>
+              <option value="other32">other32</option>
+              <option value="other33">other33</option>
+              <option value="other34">other34</option>
+              <option value="other35">other35</option>
+              <option value="other36">other36</option>
+              <option value="other37">other37</option>
+              <option value="other38">other38</option>
+              <option value="other39">other39</option>
+              <option value="other40">other40</option>
+              <option value="other41">other41</option>
+              <option value="other42">other42</option>
+              <option value="other43">other43</option>
+              <option value="other44">other44</option>
+              <option value="other45">other45</option>
+              <option value="other46">other46</option>
+              <option value="other47">other47</option>
+              <option value="other48">other48</option>
+              <option value="other49">other49</option>
+              <option value="other50">other50</option>
+            </select>
+            <input id="prop-html-readonly" type="text" readonly disabled style="display:none;" />
+
+            <label for="prop-type">Field type</label>
+            <select id="prop-type">
+              <option value="text">Text</option>
+              <option value="textarea">Textarea</option>
+              <option value="dropdown">Dropdown</option>
+              <option value="checkbox">Checkbox</option>
+              <option value="number">Number</option>
+              <option value="multiselect">Multi-select</option>
+              <option value="radio">Radio</option>
+              <option value="date">Date</option>
+              <option value="time">Time</option>
+              <option value="datetime">Date &amp; time</option>
+              <option value="email">Email</option>
+              <option value="consent">Consent</option>
+            </select>
+
+            <label for="prop-placeholder">Placeholder</label>
+            <input id="prop-placeholder" type="text" />
+
+            <label for="prop-help">Help text</label>
+            <textarea id="prop-help" rows="2"></textarea>
+
+            <label for="prop-width">Width</label>
+            <select id="prop-width"><option value="full">Full</option><option value="half">Half</option></select>
+
+            <label for="prop-step">Step</label>
+            <select id="prop-step"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+
+            <label><input id="prop-hidden" type="checkbox" /> Hidden</label>
+            <label><input id="prop-required" type="checkbox" /> Required</label>
+
+            <div id="prop-options-wrapper" style="display:none; margin-top:8px;">
+              <label>Options</label>
+              <div id="prop-options-list"></div>
+              <button id="prop-add-option" class="btn btn-secondary" style="margin-top:8px;">+ Add option</button>
+            </div>
+
+            <!-- Conditions: simple if/then rules -->
+            <div id="prop-conditions-section">
+              <div class="condition-header" id="prop-conditions-header">
+                <label style="margin-top:12px;">Conditions (If/Then)</label>
+                <button id="prop-condition-toggle" type="button" class="condition-toggle off" aria-pressed="false">Off</button>
+              </div>
+              <div class="condition-action-row" style="display:none;">
+                <span class="small" style="font-weight:600;">Action</span>
+                <select id="prop-condition-action">
+                  <option value="show">Show</option>
+                  <option value="hide">Hide</option>
+                </select>
+              </div>
+              <div id="prop-conditions-list" class="small" style="display:none; margin-top:6px;"></div>
+              <button id="prop-add-condition" class="btn btn-secondary" style="display:none; margin-top:8px;">+ Add condition</button>
+              <div class="small" id="prop-condition-helper" style="display:none; margin-top:6px; color:#666;">Show this field only when conditions are met. Simple equality rules supported (field == value).</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <button id="prop-apply" class="btn btn-primary btn-full">Apply</button>
+          </div>
+        </div>
+        <div id="link-modal" class="link-modal" style="display:none;">
+          <div class="link-modal-content">
+            <div class="link-modal-header">
+              <span>Embed Link</span>
+              <button type="button" class="link-modal-close">×</button>
+            </div>
+            <label class="link-modal-label">URL
+              <input id="link-url" type="text" placeholder="https://example.com" />
+            </label>
+            <label class="link-modal-label">Text to display
+              <input id="link-text" type="text" placeholder="Please Input" />
+            </label>
+            <label class="link-modal-label">Action
+              <select id="link-action">
+                <option value="new" selected>New window</option>
+                <option value="current">Current window</option>
+              </select>
+            </label>
+            <div class="link-modal-buttons">
+              <button id="link-cancel" type="button">Cancel</button>
+              <button id="link-save" type="button" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="existing-field-modal" class="existing-field-modal" style="display:none;" aria-hidden="true">
+          <div class="existing-field-modal-content" role="dialog" aria-modal="true" aria-labelledby="existing-field-modal-title">
+            <div class="existing-field-modal-header">
+              <div>
+                <span id="existing-field-modal-title">Add existing field</span>
+                <p class="existing-field-modal-subtitle">Choose from standard library fields or Custom Fields.</p>
+              </div>
+              <button type="button" id="existing-field-modal-close" class="existing-field-modal-close" aria-label="Close">×</button>
+            </div>
+            <div class="existing-field-modal-body" id="existing-field-list"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Live preview</h3>
+          <div class="preview-box">
+            <div class="preview-header">
+              <span id="preview-title">Desktop preview</span>
+              <span class="layout-tag" id="layout-tag">Single-step</span>
+            </div>
+            <div class="wizard-nav" id="wizard-nav"></div>
+            <div class="form-preview density-standard" id="preview"></div>
+            <button class="btn btn-primary btn-full">Submit</button>
+          </div>
+          <div class="helper">
+            Preview shows how layout, steps, field types, and dropdown options will render on the page.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-design">
+      <div class="helper">Design tab controls column layout on the page, background theme, etc. (existing options).</div>
+    </div>
+
+    <div class="tab-panel" id="tab-confirmation">
+      <div class="helper">Confirmation tab retains Redirect / Modal / Download options and copy.</div>
+    </div>
+
+    <div class="tab-panel" id="tab-hidden">
+      <div class="helper">Additional Hidden Fields tab keeps UTMs, campaign IDs, and other integration fields.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Tab switching
+  var tabs = document.querySelectorAll('.dialog-tab');
+  var panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var target = tab.getAttribute('data-tab');
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      var panel = document.getElementById('tab-' + target);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // Template definitions (same as original)
+  var templates = {
+    contact: [
+      { type:'field', id:'firstName',  html:'first_name',  label:'First name',           width:'half', show:true, required:true,  placeholder:'Enter your first name', help:'', step:1, fieldType:'text' },
+      { type:'field', id:'lastName',   html:'last_name',   label:'Last name',            width:'half', show:true, required:true,  placeholder:'Enter your last name', help:'', step:1, fieldType:'text' },
+      { type:'field', id:'email',      html:'email',       label:'Work email',           width:'full', show:true, required:true,  placeholder:'name@company.com', help:'We’ll send follow-up details here.', step:1, fieldType:'email' },
+      { type:'field', id:'phone',      html:'telephone',   label:'Telephone',            width:'half', show:true, required:false, placeholder:'+1 555 555 5555', help:'Include country code if outside US.', step:2, fieldType:'text' },
+      { type:'field', id:'company',    html:'company',     label:'Company',              width:'half', show:true, required:false, placeholder:'Your organization', help:'', step:2, fieldType:'text' },
+      { type:'field', id:'country',    html:'country',     label:'Country',              width:'half', show:true, required:false, placeholder:'Select your country', help:'', step:2, fieldType:'dropdown', options:['Select…','United States','Canada','Brazil','Other'], lockOptions:true },
+      { type:'field', id:'state',      html:'state',       label:'State / Region',       width:'half', show:true, required:false, placeholder:'Select your state', help:'', step:2, fieldType:'dropdown', options:['Select…','California','New York','Texas','Other'], lockOptions:true },
+      { type:'field', id:'message',    html:'message',     label:'How can we help you?', width:'full', show:true, required:false, placeholder:'Add details about your request', help:'Share any context for your request.', step:3, fieldType:'textarea' },
+      { type:'field', id:'optIn',      html:'email_optin', label:'I’d like to receive email updates.', width:'full', show:true, required:false, placeholder:'', help:'', step:3, fieldType:'consent' }
+    ],
+    download: [
+      { type:'field', id:'firstName',  html:'first_name',  label:'First name',           width:'half', show:true, required:true,  placeholder:'Enter your first name', help:'', step:1, fieldType:'text' },
+      { type:'field', id:'lastName',   html:'last_name',   label:'Last name',            width:'half', show:true, required:true,  placeholder:'Enter your last name', help:'', step:1, fieldType:'text' },
+      { type:'field', id:'email',      html:'email',       label:'Work email',           width:'full', show:true, required:true,  placeholder:'name@company.com', help:'We’ll send the download link here.', step:1, fieldType:'email' },
+      { type:'field', id:'company',    html:'company',     label:'Company',              width:'full', show:true, required:false, placeholder:'Your organization', help:'', step:2, fieldType:'text' },
+      { type:'field', id:'country',    html:'country',     label:'Country',              width:'half', show:true, required:false, placeholder:'Select your country', help:'', step:2, fieldType:'dropdown', options:['Select…','United States','Canada','Brazil','Other'], lockOptions:true },
+      { type:'field', id:'optIn',      html:'email_optin', label:'I’d like to receive email updates.', width:'full', show:true, required:false, placeholder:'', help:'', step:2, fieldType:'consent' }
+    ]
+  };
+
+  var templateMetaDefaults = {
+    contact: {
+      eloquaName: 'NA-US-BIS-Contact-Form',
+      salesforceCampaignId: '7013X000000Contact',
+      salesforceNotes: 'Route to NA BIS contact queue'
+    },
+    download: {
+      eloquaName: 'NA-US-BIS-Download-Resource',
+      salesforceCampaignId: '7013X000000Download',
+      salesforceNotes: 'Trigger nurture follow-up for download request'
+    }
+  };
+
+  var EXISTING_FIELD_LIBRARY = [
+    { group: 'Standard', id: 'firstName',  html: 'first_name',  label: 'First name',           width: 'half', fieldType: 'text',       placeholder: 'Enter first name',      required: true,  help: '', options: [] },
+    { group: 'Standard', id: 'lastName',   html: 'last_name',   label: 'Last name',            width: 'half', fieldType: 'text',       placeholder: 'Enter last name',       required: true,  help: '', options: [] },
+    { group: 'Standard', id: 'email',      html: 'email',       label: 'Work email',           width: 'full', fieldType: 'email',      placeholder: 'name@company.com',      required: true,  help: 'Used for follow-up communications.', options: [] },
+    { group: 'Standard', id: 'phone',      html: 'telephone',   label: 'Telephone',            width: 'half', fieldType: 'text',       placeholder: '+1 555 555 5555',       required: false, help: 'Include country code if outside US.', options: [] },
+    { group: 'Standard', id: 'company',    html: 'company',     label: 'Company',              width: 'half', fieldType: 'text',       placeholder: 'Your organization',     required: false, help: '', options: [] },
+    { group: 'Standard', id: 'jobTitle',   html: 'job_title',   label: 'Job title',            width: 'half', fieldType: 'text',       placeholder: 'Your role',             required: false, help: '', options: [] },
+    { group: 'Standard', id: 'country',    html: 'country',     label: 'Country',              width: 'half', fieldType: 'dropdown',   placeholder: '',                       required: false, help: '', options: ['Select…','United States','Canada','Brazil','Other'], lockOptions: true },
+    { group: 'Standard', id: 'state',      html: 'state',       label: 'State / Region',       width: 'half', fieldType: 'dropdown',   placeholder: '',                       required: false, help: '', options: ['Select…','California','New York','Texas','Other'], lockOptions: true },
+    { group: 'Standard', id: 'message',    html: 'message',     label: 'Message',              width: 'full', fieldType: 'textarea',   placeholder: 'Add details about your request', required: false, help: '', options: [] },
+    { group: 'Standard', id: 'optIn',      html: 'email_optin', label: 'Email opt-in',         width: 'full', fieldType: 'consent',    placeholder: '',                       required: false, help: '', options: [] },
+    { group: 'Custom Fields', id: 'productInterest', html: 'product_interest', label: 'Product of interest', width:'full', fieldType:'dropdown', placeholder:'Select a product', required:false, help:'Used by BU demand gen team.', options:['Credit Monitoring','Fraud Detection','Compliance Suite'] },
+    { group: 'Custom Fields', id: 'priorityLevel', html: 'priority_level', label: 'Sales priority level', width:'half', fieldType:'dropdown', placeholder:'Select priority', required:false, help:'Internal scoring hint.', options:['Hot','Warm','Cold'] },
+    { group: 'Custom Fields', id: 'regionOwner', html: 'region_owner', label: 'Target region owner', width:'half', fieldType:'dropdown', placeholder:'Region', required:false, help:'Routes to territory managers.', options:['North America','LATAM','EMEA','APAC'] },
+    { group: 'Custom Fields', id: 'campaignSource', html: 'campaign_source_detail', label: 'Campaign source detail', width:'full', fieldType:'text', placeholder:'Describe source/campaign', required:false, help:'Free text notes passed to CRM.', options: [] }
+  ];
+
+  var OTHER_NAMES = Array.from({length:50}, function(_,i){ return 'other' + (i+1); });
+
+  var fieldConfigContainer = document.getElementById('field-config');
+  var previewContainer = document.getElementById('preview');
+  var previewFieldRegistry = {};
+  var previewDependencyMap = {};
+  var layoutTag = document.getElementById('layout-tag');
+  var templateSelect = document.getElementById('form-template');
+  var densitySelect = document.getElementById('density');
+  var layoutSelect = document.getElementById('layoutType');
+  var numStepsGroup = document.getElementById('numStepsGroup');
+  var numStepsSelect = document.getElementById('numSteps');
+  var wizardNav = document.getElementById('wizard-nav');
+  var refreshBtn = document.getElementById('refresh');
+  var addExistingFieldBtn = document.getElementById('add-existing-field');
+  var addFieldBtn = document.getElementById('add-field');
+  var addTextBtn = document.getElementById('add-text');
+  var fieldPanelToggle = document.getElementById('field-panel-toggle');
+  var fieldPanelBody = document.getElementById('field-panel-body');
+  var existingFieldModal = document.getElementById('existing-field-modal');
+  var existingFieldList = document.getElementById('existing-field-list');
+  var existingFieldModalClose = document.getElementById('existing-field-modal-close');
+  var FORM_META_KEYS = ['eloquaName','salesforceCampaignId','salesforceNotes'];
+  var metaInputs = {
+    eloquaName: document.getElementById('meta-eloqua-input'),
+    salesforceCampaignId: document.getElementById('meta-salesforce-campaign-input'),
+    salesforceNotes: document.getElementById('meta-salesforce-notes-input')
+  };
+  var metaChipLists = {
+    eloquaName: document.getElementById('meta-eloqua-chips'),
+    salesforceCampaignId: document.getElementById('meta-salesforce-campaign-chips'),
+    salesforceNotes: document.getElementById('meta-salesforce-notes-chips')
+  };
+  var formMetaState = {
+    eloquaName: '',
+    salesforceCampaignId: '',
+    salesforceNotes: ''
+  };
+
+  // properties form elements (used inline under fields only)
+  var propertiesForm = document.getElementById('properties-form');
+  var propLabel = document.getElementById('prop-label');
+  var propHtml = document.getElementById('prop-html');
+  var propHtmlReadOnly = document.getElementById('prop-html-readonly');
+  var propPlaceholder = document.getElementById('prop-placeholder');
+  var propHelp = document.getElementById('prop-help');
+  var propType = document.getElementById('prop-type');
+  var propTypeReadOnly = document.getElementById('prop-type-readonly');
+  var propWidth = document.getElementById('prop-width');
+  var propConditionAction = document.getElementById('prop-condition-action');
+  var propConditionActionRow = document.querySelector('.condition-action-row');
+  var propConditionsSection = document.getElementById('prop-conditions-section');
+  var propConditionToggle = document.getElementById('prop-condition-toggle');
+  var propConditionHelper = document.getElementById('prop-condition-helper');
+  var propHidden = document.getElementById('prop-hidden');
+  var CONDITION_LIMIT = 5;
+  var CONDITION_FIELD_TYPES = ['dropdown','multiselect','radio','checkbox','consent'];
+  var CONDITION_OPERATORS = [
+    { value: 'is', label: 'Is' },
+    { value: 'is blank', label: 'Is blank' },
+    { value: 'is not', label: 'Is not' }
+  ];
+  var CONDITION_CONNECTORS = [
+    { value: 'and', label: 'And' },
+    { value: 'or', label: 'Or' }
+  ];
+  // Replace old text-size with new font-size
+  var propFontSize = document.getElementById('prop-font-size');
+  var propAlign = document.getElementById('prop-align');
+  var propUrl = document.getElementById('prop-url');
+  var propHiddenLabel = document.querySelector('label > input#prop-hidden') ? document.querySelector('label > input#prop-hidden').parentElement : null;
+  var propRequired = document.getElementById('prop-required');
+  var propOptionsWrapper = document.getElementById('prop-options-wrapper');
+  var propOptionsList = document.getElementById('prop-options-list');
+  var propAddOption = document.getElementById('prop-add-option');
+  var propApply = document.getElementById('prop-apply');
+  var propConditionsList = document.getElementById('prop-conditions-list');
+  var propAddCondition = document.getElementById('prop-add-condition');
+  var propStep = document.getElementById('prop-step');
+  // cache labels for toggling visibility
+  var propStepLabel = document.querySelector('label[for="prop-step"]');
+  var propHtmlLabel = document.querySelector('label[for="prop-html"]');
+  var propPlaceholderLabel = document.querySelector('label[for="prop-placeholder"]');
+  var propHelpLabel = document.querySelector('label[for="prop-help"]');
+  var propTypeLabel = document.querySelector('label[for="prop-type"]');
+  var propWidthLabel = document.querySelector('label[for="prop-width"]');
+  var propRequiredLabel = document.querySelector('label > input#prop-required') ? document.querySelector('label > input#prop-required').parentElement : null;
+  var propLabelWrapper = document.getElementById('prop-label-wrapper');
+  var propRichEditorWrapper = document.getElementById('prop-rich-editor-wrapper');
+  var propTextEditor = document.getElementById('prop-text-editor');
+  var propLinkStatus = document.getElementById('prop-link-status');
+  var propLinkTarget = document.getElementById('prop-link-target');
+  var propInsertLinkBtn = document.getElementById('prop-insert-link');
+  var alignButtons = document.querySelectorAll('.align-btn');
+  var richEditorCommands = document.querySelectorAll('.text-editor-toolbar button[data-command]');
+  var fieldControls = document.getElementById('field-controls');
+  var linkModal = document.getElementById('link-modal');
+  var linkModalUrl = document.getElementById('link-url');
+  var linkModalText = document.getElementById('link-text');
+  var linkModalAction = document.getElementById('link-action');
+  var linkModalSave = document.getElementById('link-save');
+  var linkModalCancel = document.getElementById('link-cancel');
+  var linkModalClose = document.querySelector('.link-modal-close');
+
+  var currentStep = 1;
+  var draggedRow = null;
+  var selectedFieldId = null; // id of selected field for properties panel
+  var savedRange = null;
+
+  function attachDragHandlers(row) {
+    row.setAttribute('draggable', 'true');
+    var handle = row.querySelector('.field-row-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', function(){ row.style.cursor = 'grabbing'; });
+      handle.addEventListener('mouseup', function(){ row.style.cursor = 'grab'; });
+    }
+    row.addEventListener('dragstart', function(e){
+      draggedRow = row;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(function(){ row.classList.add('dragging'); }, 0);
+    });
+    row.addEventListener('dragend', function(){
+      row.classList.remove('dragging');
+      draggedRow = null;
+      var all = fieldConfigContainer.querySelectorAll('.field-row');
+      all.forEach(function(r){ r.classList.remove('drag-over'); });
+    });
+    row.addEventListener('dragover', function(e){
+      e.preventDefault();
+      if (!draggedRow || draggedRow === row) return;
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', function(){
+      row.classList.remove('drag-over');
+    });
+    row.addEventListener('drop', function(e){
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if (!draggedRow || draggedRow === row) return;
+      var bounds = row.getBoundingClientRect();
+      var offset = e.clientY - bounds.top;
+      if (offset > bounds.height / 2) {
+        fieldConfigContainer.insertBefore(draggedRow, row.nextSibling);
+      } else {
+        fieldConfigContainer.insertBefore(draggedRow, row);
+      }
+    });
+  }
+
+  function buildOptionsUI(row, cfg, isStandard) {
+    var container = row.querySelector('.options-wrapper');
+    if (!container) return;
+    var typeSelect = row.querySelector('.field-type-select');
+    var fieldType = (cfg.fieldType || (typeSelect ? typeSelect.value : 'text'));
+
+    var isChoice = fieldType === 'dropdown' || fieldType === 'multiselect' || fieldType === 'radio';
+    if (!isChoice) {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'block';
+    var list = container.querySelector('.options-list');
+    var addLink = container.querySelector('.options-add');
+    var helper = container.querySelector('.options-helper');
+    list.innerHTML = '';
+
+    var opts = cfg.options && cfg.options.length ? cfg.options : ['Option 1','Option 2','Option 3'];
+    opts.forEach(function(val){
+      var li = document.createElement('li');
+      li.className = 'option-row';
+      li.innerHTML = '<span class="handle">⋮⋮</span>' +
+                     '<input type="text" class="option-input" value="' + (val || '').replace(/"/g,'&quot;') + '"' + (isStandard ? ' disabled' : '') + ' />' +
+                     (isStandard ? '' : '<button type="button" class="option-delete">✕</button>');
+      list.appendChild(li);
+    });
+
+    if (isStandard) {
+      if (addLink) addLink.style.display = 'none';
+      if (helper) helper.textContent = 'Options are managed at the global form level.';
+    } else {
+      if (addLink) {
+        addLink.style.display = 'inline';
+        addLink.onclick = function(e){
+          e.preventDefault();
+          var li = document.createElement('li');
+          li.className = 'option-row';
+          li.innerHTML = '<span class="handle">⋮⋮</span>' +
+                         '<input type="text" class="option-input" value="" />' +
+                         '<button type="button" class="option-delete">✕</button>';
+          list.appendChild(li);
+        };
+      }
+      if (helper) helper.textContent = 'Drag to reorder options. These map to picklist values in Eloqua/EDMA.';
+      list.addEventListener('click', function(e){
+        if (e.target.classList.contains('option-delete')) {
+          e.preventDefault();
+          var li = e.target.closest('.option-row');
+          if (li) li.remove();
+        }
+      });
+    }
+  }
+
+  function buildFieldRow(cfg) {
+    var isStandard = cfg.id.indexOf('custom_') !== 0 && cfg.type === 'field';
+    var row = document.createElement('div');
+    row.className = 'field-row';
+    row.setAttribute('data-id', cfg.id);
+    row.setAttribute('data-type', cfg.type || 'field');
+
+    if (cfg.type === 'text') {
+      // show a short preview of the text block
+      var textPreview = stripHtml(cfg.text || '').replace(/\s+/g, ' ').slice(0, 120);
+      row.innerHTML = '\n      <div class="field-row-main">\n        <div class="field-row-main-left">\n          <span class="field-row-handle">⋮⋮</span>\n          <span class="kind-label">Text block</span>\n        </div>\n        <div style="font-weight:400; font-size:12px; margin-left:8px;">' + (textPreview || 'Text block') + '</div>\n      </div>';
+    } else {
+      var labelText = ((cfg.label || '') ? cfg.label.replace(/"/g,'&quot;') : 'Untitled');
+      row.innerHTML = '\n      <div class="field-row-main">\n        <div class="field-row-main-left">\n          <span class="field-row-handle">⋮⋮</span>\n          <span class="field-row-label">' + labelText + '</span>\n        </div>\n        <div class="field-row-meta">\n          <span class="field-condition-indicator" aria-label="Conditional field">Conditional</span>\n          <span class="kind-label">' + (isStandard ? 'Standard field' : 'Custom field') + '</span>\n        </div>\n      </div>';
+    }
+
+    // attach the config object to the row so properties panel and preview can read it
+    row._cfg = Object.assign({}, cfg);
+
+    // selection handler: click to select and open properties
+    row.addEventListener('click', function(e){
+      e.stopPropagation();
+      // toggle: if this is already selected, collapse/clear selection
+      if (selectedFieldId === row._cfg.id) {
+        selectedFieldId = null;
+        var allRows = fieldConfigContainer.querySelectorAll('.field-row');
+        allRows.forEach(function(r){ r.classList.remove('selected'); });
+        if (propertiesForm) propertiesForm.style.display = 'none';
+        // restorePropertiesForm(); // no longer needed, handled in loadTemplate
+        return;
+      }
+      selectFieldForProperties(row._cfg.id);
+      var all = fieldConfigContainer.querySelectorAll('.field-row');
+      all.forEach(function(r){ r.classList.remove('selected'); });
+      row.classList.add('selected');
+    });
+
+    attachDragHandlers(row);
+    fieldConfigContainer.appendChild(row);
+    updateFieldConditionIndicator(row);
+    return row;
+  }
+
+  function updateFieldConditionIndicator(row) {
+    if (!row || row.getAttribute('data-type') !== 'field') return;
+    var indicator = row.querySelector('.field-condition-indicator');
+    if (!indicator) return;
+    var hasConditions = hasActiveConditions(row._cfg);
+    indicator.classList.toggle('active', !!hasConditions);
+  }
+
+  function loadTemplate(name) {
+    var templateFields = templates[name];
+    fieldConfigContainer.innerHTML = '';
+    selectedFieldId = null;
+    if (propertiesForm) propertiesForm.style.display = 'none';
+    // ensure the properties form is restored when loading a new template / clearing selection
+    restorePropertiesForm();
+    if (!templateFields || !templateFields.length) {
+      fieldConfigContainer.innerHTML = '<div class="field-config-empty">No fields defined for this template.</div>';
+      return;
+    }
+    templateFields.forEach(function(cfg){
+      buildFieldRow(cfg);
+    });
+  }
+
+  function addCustomField() {
+    var id = 'custom_' + Date.now();
+    var field = {
+      type:'field',
+      id: id,
+      html: 'other1',
+      label: 'Custom field',
+      width: 'full',
+      show: true,
+      required: false,
+      placeholder: '',
+      help: '',
+      step: 1,
+      fieldType:'text'
+    };
+    buildFieldRow(field);
+    selectFieldForProperties(id);
+  }
+
+  function addTextBlock() {
+    var id = 'text_' + Date.now();
+    var cfg = {
+      type:'text',
+      id:id,
+      text:'Text block',
+      fontSize:'body',
+      align:'left',
+      url:'',
+      show:true,
+      step:1
+    };
+    buildFieldRow(cfg);
+    selectFieldForProperties(id);
+  }
+
+  function getConfigFromUI() {
+    // read config from row._cfg for each row; this keeps the model separate from DOM inputs
+    var rows = fieldConfigContainer.querySelectorAll('.field-row');
+    var config = [];
+    rows.forEach(function(row){
+      var cfg = row._cfg || { type: 'field', id: row.getAttribute('data-id') };
+      // If label input exists inline, sync it back to cfg
+      var labelInput = row.querySelector('.label-input');
+      if (labelInput) cfg.label = labelInput.value || cfg.label || 'Untitled';
+
+      // sync HTML name if present
+      var htmlInput = row.querySelector('.html-name-input');
+      var htmlSelect = row.querySelector('.html-name-select');
+      if (htmlInput) cfg.html = htmlInput.value;
+      else if (htmlSelect) cfg.html = htmlSelect.value;
+
+      config.push(Object.assign({}, cfg));
+    });
+    return config;
+  }
+
+  function normalizeStep(step, maxSteps) {
+    if (!step || step < 1) return 1;
+    if (step > maxSteps) return maxSteps;
+    return step;
+  }
+
+  function renderPreview() {
+    var cfg = getConfigFromUI();
+    var density = densitySelect.value;
+    var layout = layoutSelect.value;
+    var maxSteps = parseInt(numStepsSelect.value, 10) || 3;
+
+    if (currentStep > maxSteps) currentStep = maxSteps;
+
+    var layoutLabelMap = {
+      single: 'Single-step',
+      wizard: 'Multi-step',
+      card: 'Card layout'
+    };
+    layoutTag.textContent = layoutLabelMap[layout] || 'Custom layout';
+
+    previewContainer.className = 'form-preview ' + density + ' layout-' + layout;
+    previewContainer.innerHTML = '';
+    previewFieldRegistry = {};
+    previewDependencyMap = {};
+
+    if (layout === 'wizard') {
+      wizardNav.style.display = 'flex';
+      wizardNav.innerHTML = '';
+      for (var s = 1; s <= maxSteps; s++) {
+        (function(stepNum){
+          var btn = document.createElement('button');
+          btn.textContent = stepNum;
+          if (stepNum === currentStep) btn.classList.add('active');
+          btn.addEventListener('click', function(){
+            currentStep = stepNum;
+            renderPreview();
+          });
+          wizardNav.appendChild(btn);
+        })(s);
+      }
+      var heading = document.createElement('div');
+      heading.className = 'step-heading';
+      heading.textContent = 'Step ' + currentStep + ' of ' + maxSteps;
+      previewContainer.appendChild(heading);
+
+      cfg.forEach(function(item){
+        if (!item.show) return;
+        var normalized = normalizeStep(item.step, maxSteps);
+        if (normalized !== currentStep) return;
+        var element = appendPreviewItem(item, previewContainer, density, layout);
+        handleRenderedPreviewField(item, element);
+      });
+    } else {
+      wizardNav.style.display = 'none';
+      wizardNav.innerHTML = '';
+      cfg.forEach(function(item){
+        if (!item.show) return;
+        var element = appendPreviewItem(item, previewContainer, density, layout);
+        handleRenderedPreviewField(item, element);
+      });
+    }
+
+    initializePreviewConditionEngine(cfg);
+  }
+
+  function applyPreviewSpacing(element, density, layout) {
+    if (!element) return;
+    if (layout === 'card') {
+      element.style.marginBottom = '12px';
+      return;
+    }
+    if (density === 'compact') element.style.marginBottom = '4px';
+    else if (density === 'standard') element.style.marginBottom = '8px';
+    else element.style.marginBottom = '14px';
+  }
+
+  function hasActiveConditions(field) {
+    return !!(field && field.type === 'field' && field.conditionsEnabled && Array.isArray(field.conditions) && field.conditions.length);
+  }
+
+  function handleRenderedPreviewField(item, element) {
+    if (!element || item.type !== 'field') return;
+    var placeholder = null;
+    if (hasActiveConditions(item)) {
+      placeholder = ensureConditionalPlaceholder(element, item);
+      element.classList.add('conditional-field');
+    }
+    var entry = registerPreviewField(item, element);
+    if (entry && placeholder) entry.placeholder = placeholder;
+  }
+
+  function registerPreviewField(fieldConfig, element) {
+    if (!fieldConfig || !element || fieldConfig.type !== 'field') return null;
+    var htmlName = fieldConfig.html || fieldConfig.id;
+    if (!htmlName) return null;
+    var controls = Array.from(element.querySelectorAll('[data-field-control="true"]'));
+    element.dataset.htmlName = htmlName;
+    element.dataset.fieldId = fieldConfig.id || '';
+    var entry = {
+      config: fieldConfig,
+      element: element,
+      controls: controls,
+      placeholder: element.querySelector('.conditional-placeholder') || null
+    };
+    previewFieldRegistry[htmlName] = entry;
+    return entry;
+  }
+
+  function ensureConditionalPlaceholder(element, field) {
+    if (!element) return null;
+    var existing = element.querySelector('.conditional-placeholder');
+    if (existing) return existing;
+    var placeholder = document.createElement('div');
+    placeholder.className = 'conditional-placeholder';
+    var message = document.createElement('span');
+    message.className = 'conditional-message';
+    var label = field.label || 'Untitled field';
+    message.textContent = label + ' is hidden until its conditions are met';
+    var pill = document.createElement('span');
+    pill.className = 'conditional-pill';
+    pill.textContent = 'Conditional';
+    placeholder.appendChild(message);
+    placeholder.appendChild(pill);
+    element.appendChild(placeholder);
+    return placeholder;
+  }
+
+  function initializePreviewConditionEngine(config) {
+    if (!previewFieldRegistry) previewFieldRegistry = {};
+    previewDependencyMap = {};
+    var conditionalFields = [];
+
+    config.forEach(function(field){
+      if (!hasActiveConditions(field)) return;
+      var key = field.html || field.id;
+      if (!key || !previewFieldRegistry[key]) return;
+      conditionalFields.push(field);
+      (field.conditions || []).forEach(function(cond){
+        if (!cond || !cond.field) return;
+        if (!previewDependencyMap[cond.field]) previewDependencyMap[cond.field] = [];
+        if (previewDependencyMap[cond.field].indexOf(field) === -1) {
+          previewDependencyMap[cond.field].push(field);
+        }
+      });
+    });
+
+    Object.keys(previewDependencyMap).forEach(function(htmlName){
+      var entry = previewFieldRegistry[htmlName];
+      if (!entry) return;
+      attachPreviewControlListeners(entry, function(){
+        var dependents = previewDependencyMap[htmlName] || [];
+        dependents.forEach(function(targetField){
+          updateConditionalFieldVisibility(targetField);
+        });
+      });
+    });
+
+    conditionalFields.forEach(function(field){
+      updateConditionalFieldVisibility(field);
+    });
+  }
+
+  function attachPreviewControlListeners(entry, handler) {
+    if (!entry || !entry.controls || !entry.controls.length) return;
+    entry.controls.forEach(function(control){
+      control.addEventListener('change', handler);
+      if (control.tagName === 'SELECT') control.addEventListener('input', handler);
+      if (control.type === 'checkbox' || control.type === 'radio') control.addEventListener('input', handler);
+    });
+  }
+
+  function getPreviewFieldEntry(htmlName) {
+    return previewFieldRegistry ? previewFieldRegistry[htmlName] : null;
+  }
+
+  function getPreviewFieldValue(htmlName) {
+    var entry = getPreviewFieldEntry(htmlName);
+    if (!entry) return '';
+    var type = entry.config.fieldType || 'text';
+    if (!entry.controls || !entry.controls.length) return '';
+    if (type === 'dropdown') {
+      return entry.controls[0].value || '';
+    }
+    if (type === 'multiselect') {
+      var select = entry.controls[0];
+      var selected = select && select.selectedOptions ? Array.from(select.selectedOptions) : [];
+      return selected.map(function(opt){ return opt.value; });
+    }
+    if (type === 'radio') {
+      var checked = entry.controls.find(function(ctrl){ return ctrl.checked; });
+      return checked ? (checked.value || '') : '';
+    }
+    if (type === 'checkbox' || type === 'consent') {
+      return entry.controls[0].checked ? 'checked' : 'unchecked';
+    }
+    return '';
+  }
+
+  function evaluateSingleCondition(cond, value) {
+    var operator = (cond && cond.operator ? cond.operator.toLowerCase() : 'is');
+    var target = (cond && typeof cond.value !== 'undefined') ? cond.value : '';
+    if (Array.isArray(value)) {
+      var contains = value.indexOf(target) !== -1;
+      if (operator === 'is blank') return value.length === 0;
+      if (operator === 'is not') return !contains;
+      return contains;
+    }
+    var normalized = (value == null) ? '' : String(value);
+    if (operator === 'is blank') return normalized === '' || normalized === 'unchecked';
+    if (operator === 'is not') return normalized !== target;
+    return normalized === target;
+  }
+
+  function evaluateFieldConditions(fieldConfig) {
+    if (!hasActiveConditions(fieldConfig)) return true;
+    var conditions = fieldConfig.conditions || [];
+    var result = null;
+    conditions.forEach(function(cond, index){
+      if (!cond || !cond.field) return;
+      var condResult = evaluateSingleCondition(cond, getPreviewFieldValue(cond.field));
+      if (result === null) {
+        result = condResult;
+        return;
+      }
+      var connector = (cond.connector || 'and').toLowerCase();
+      if (connector === 'or') result = result || condResult;
+      else result = result && condResult;
+    });
+    return result === null ? false : result;
+  }
+
+  function updateConditionalFieldVisibility(fieldConfig) {
+    if (!fieldConfig) return;
+    var key = fieldConfig.html || fieldConfig.id;
+    if (!key) return;
+    var entry = getPreviewFieldEntry(key);
+    if (!entry || !entry.element) return;
+    var shouldShow = evaluateFieldConditions(fieldConfig);
+    entry.element.classList.toggle('conditional-hidden', !shouldShow);
+  }
+
+  function appendPreviewItem(f, container, density, layoutMode) {
+    var layout = layoutMode || 'single';
+    var isCardLayout = layout === 'card';
+
+    if (f.type === 'text') {
+      var textWrap = document.createElement('div');
+      textWrap.className = 'preview-field full';
+      if (isCardLayout) textWrap.classList.add('card-field');
+      applyPreviewSpacing(textWrap, density, layout);
+      textWrap.style.textAlign = f.align || 'left';
+
+      var contentEl = document.createElement('div');
+      contentEl.className = 'preview-text ' + (f.fontSize || 'body');
+      contentEl.innerHTML = f.text || '';
+
+      if (f.url && !(f.text || '').match(/<a\b/i)) {
+        var a = document.createElement('a');
+        a.href = f.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.style.color = 'inherit';
+        a.style.display = 'block';
+        a.appendChild(contentEl);
+        textWrap.appendChild(a);
+      } else {
+        textWrap.appendChild(contentEl);
+      }
+      container.appendChild(textWrap);
+      return textWrap;
+    }
+
+    var widthClass = f.width || 'full';
+    var wrap = document.createElement('div');
+    wrap.className = 'preview-field ' + widthClass;
+    if (isCardLayout) wrap.classList.add('card-field');
+    applyPreviewSpacing(wrap, density, layout);
+
+    var inner = document.createElement('div');
+    inner.className = 'preview-field-inner';
+    var lab = document.createElement('label');
+    lab.textContent = (f.label || 'Untitled') + (f.required ? ' *' : '');
+    inner.appendChild(lab);
+
+    var controlType = f.fieldType || 'text';
+    var input;
+
+    if (controlType === 'textarea') {
+      input = document.createElement('textarea');
+      input.rows = 3;
+      input.setAttribute('data-field-control', 'true');
+    } else if (controlType === 'dropdown' || controlType === 'multiselect') {
+      input = document.createElement('select');
+      if (controlType === 'multiselect') input.multiple = true;
+      input.setAttribute('data-field-control', 'true');
+      var opts = (f.options && f.options.length) ? f.options : ['Option 1','Option 2','Option 3'];
+      opts.forEach(function(opt){
+        var o = document.createElement('option');
+        o.textContent = opt;
+        o.value = opt;
+        input.appendChild(o);
+      });
+    } else if (controlType === 'radio') {
+      input = document.createElement('div');
+      var optsR = (f.options && f.options.length) ? f.options : ['Option 1','Option 2'];
+      optsR.forEach(function(opt){
+        var labelEl = document.createElement('label');
+        labelEl.style.fontSize = '11px';
+        labelEl.style.marginRight = '8px';
+        var r = document.createElement('input');
+        r.type = 'radio';
+        r.name = f.id || 'radio_' + Math.random();
+        r.value = opt;
+        r.setAttribute('data-field-control', 'true');
+        labelEl.appendChild(r);
+        labelEl.appendChild(document.createTextNode(' ' + opt));
+        input.appendChild(labelEl);
+      });
+    } else if (controlType === 'checkbox' || controlType === 'consent') {
+      input = document.createElement('input');
+      input.type = 'checkbox';
+      input.setAttribute('data-field-control', 'true');
+    } else if (controlType === 'number') {
+      input = document.createElement('input');
+      input.type = 'number';
+      input.setAttribute('data-field-control', 'true');
+    } else if (controlType === 'date') {
+      input = document.createElement('input');
+      input.type = 'date';
+      input.setAttribute('data-field-control', 'true');
+    } else if (controlType === 'time') {
+      input = document.createElement('input');
+      input.type = 'time';
+      input.setAttribute('data-field-control', 'true');
+    } else if (controlType === 'datetime') {
+      input = document.createElement('input');
+      input.type = 'datetime-local';
+      input.setAttribute('data-field-control', 'true');
+    } else if (controlType === 'email') {
+      input = document.createElement('input');
+      input.type = 'email';
+      input.setAttribute('data-field-control', 'true');
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.setAttribute('data-field-control', 'true');
+    }
+
+    if (f.placeholder && input.tagName !== 'SELECT' && input.type !== 'checkbox' && input.type !== 'radio' && input.type !== 'datetime-local') {
+      input.placeholder = f.placeholder;
+    }
+    inner.appendChild(input);
+    if (f.help) {
+      var sm = document.createElement('small');
+      sm.textContent = f.help;
+      inner.appendChild(sm);
+    }
+
+    wrap.appendChild(inner);
+    container.appendChild(wrap);
+    return wrap;
+  }
+
+  function updateStepVisibility() {
+    var isWizard = layoutSelect.value === 'wizard';
+    var stepSelects = fieldConfigContainer.querySelectorAll('.step-select');
+    stepSelects.forEach(function(sel){
+      sel.style.display = isWizard ? '' : 'none';
+    });
+    numStepsGroup.style.display = isWizard ? 'flex' : 'none';
+  }
+
+  function updateStepVisibilityForRow(row) {
+    var isWizard = layoutSelect.value === 'wizard';
+    var sel = row.querySelector('.step-select');
+    if (sel) sel.style.display = isWizard ? '' : 'none';
+  }
+
+  function getUsedHtmlNames(excludeId) {
+    var used = {};
+    var rows = fieldConfigContainer.querySelectorAll('.field-row');
+    rows.forEach(function(row){
+      var cfg = row._cfg || {};
+      if (cfg.type !== 'field') return;
+      if (excludeId && row.getAttribute('data-id') === excludeId) return;
+      if (cfg.html) used[cfg.html] = true;
+    });
+    return used;
+  }
+
+  function updateHtmlSelectOptions(excludeId) {
+    if (!propHtml) return;
+    var used = getUsedHtmlNames(excludeId);
+    Array.from(propHtml.options).forEach(function(opt){
+      if (!opt.value) { opt.disabled = false; return; }
+      opt.disabled = !!used[opt.value];
+    });
+  }
+
+  function isChoiceFieldType(type) {
+    var normalized = (type || '').toLowerCase();
+    return normalized === 'dropdown' || normalized === 'multiselect' || normalized === 'radio';
+  }
+
+  function resetPropOptionsEditor() {
+    if (propOptionsWrapper) propOptionsWrapper.style.display = 'none';
+    if (propOptionsList) propOptionsList.innerHTML = '';
+    if (propAddOption) {
+      propAddOption.disabled = false;
+      propAddOption.style.display = '';
+    }
+  }
+
+  function createOptionInputRow(value) {
+    var row = document.createElement('div');
+    row.className = 'option-row';
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.gap = '8px';
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'option-input';
+    input.value = value || '';
+    input.placeholder = 'Choice label';
+    input.style.flex = '1';
+    row.appendChild(input);
+    var remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'btn option-delete';
+    remove.textContent = '✕';
+    remove.style.padding = '4px 8px';
+    row.appendChild(remove);
+    return row;
+  }
+
+  function renderPropOptionsEditor(cfg) {
+    if (!propOptionsWrapper || !propOptionsList) return;
+    var options = (cfg && Array.isArray(cfg.options) && cfg.options.length) ? cfg.options.slice() : ['Option 1', 'Option 2'];
+    propOptionsList.innerHTML = '';
+    options.forEach(function(opt){
+      propOptionsList.appendChild(createOptionInputRow(opt));
+    });
+    propOptionsWrapper.style.display = '';
+    if (propAddOption) {
+      propAddOption.style.display = '';
+      propAddOption.disabled = false;
+    }
+  }
+
+  function collectOptionValues() {
+    if (!propOptionsList) return [];
+    var values = [];
+    var inputs = propOptionsList.querySelectorAll('input.option-input');
+    inputs.forEach(function(input){
+      var val = (input.value || '').trim();
+      if (val) values.push(val);
+    });
+    return values;
+  }
+
+  function getConditionFieldOptions() {
+    var cfgs = getConfigFromUI();
+    var options = [];
+    cfgs.forEach(function(cfg){
+      var type = cfg.fieldType || 'text';
+      if (CONDITION_FIELD_TYPES.indexOf(type) === -1) return;
+      var value = cfg.html || cfg.id;
+      if (!value) return;
+      var label = (cfg.label || cfg.id || value);
+      options.push({ value: value, label: label + ' (' + value + ')' });
+    });
+    return options;
+  }
+
+  function isConditionToggleOn() {
+    return !!(propConditionToggle && propConditionToggle.classList.contains('on'));
+  }
+
+  function updateConditionControlsVisibility(enabled) {
+    if (propConditionActionRow) propConditionActionRow.style.display = enabled ? 'flex' : 'none';
+    if (propConditionsList) propConditionsList.style.display = enabled ? 'block' : 'none';
+    if (propAddCondition) {
+      propAddCondition.style.display = enabled ? '' : 'none';
+      propAddCondition.disabled = !enabled;
+    }
+    if (propConditionHelper) propConditionHelper.style.display = enabled ? '' : 'none';
+  }
+
+  function setConditionToggleState(enabled) {
+    if (!propConditionToggle) return;
+    propConditionToggle.classList.toggle('on', !!enabled);
+    propConditionToggle.classList.toggle('off', !enabled);
+    propConditionToggle.textContent = enabled ? 'On' : 'Off';
+    propConditionToggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    updateConditionControlsVisibility(!!enabled);
+    updateConditionButtonState();
+  }
+
+  function setConditionToggleAvailability(available) {
+    if (!propConditionToggle) return;
+    propConditionToggle.disabled = !available;
+    if (!available) setConditionToggleState(false);
+  }
+
+  function getConditionFieldConfig(fieldValue) {
+    if (!fieldValue) return null;
+    var cfgs = getConfigFromUI();
+    for (var i = 0; i < cfgs.length; i++) {
+      var cfg = cfgs[i];
+      if (cfg.type !== 'field') continue;
+      var identifier = cfg.html || cfg.id;
+      if (identifier === fieldValue) return cfg;
+    }
+    return null;
+  }
+
+  function getConditionValueOptions(fieldCfg) {
+    if (!fieldCfg) return [];
+    var type = fieldCfg.fieldType || 'text';
+    if (type === 'dropdown' || type === 'multiselect' || type === 'radio') {
+      var opts = Array.isArray(fieldCfg.options) ? fieldCfg.options : [];
+      return opts.filter(function(opt){ return typeof opt === 'string' && opt.trim(); }).map(function(opt){
+        return { value: opt, label: opt };
+      });
+    }
+    if (type === 'checkbox' || type === 'consent') {
+      return [
+        { value: 'checked', label: 'Checked' },
+        { value: 'unchecked', label: 'Unchecked' }
+      ];
+    }
+    return [];
+  }
+
+  function createConditionValueControl(fieldValue, existingValue) {
+    var fieldCfg = getConditionFieldConfig(fieldValue);
+    var options = getConditionValueOptions(fieldCfg);
+    var control;
+    if (options.length) {
+      control = document.createElement('select');
+      options.forEach(function(opt){
+        var optionEl = document.createElement('option');
+        optionEl.value = opt.value;
+        optionEl.textContent = opt.label;
+        control.appendChild(optionEl);
+      });
+      if (existingValue) {
+        var hasMatch = options.some(function(opt){ return opt.value === existingValue; });
+        if (hasMatch) {
+          control.value = existingValue;
+        } else {
+          var fallback = document.createElement('option');
+          fallback.value = existingValue;
+          fallback.textContent = existingValue + ' (no longer available)';
+          fallback.selected = true;
+          fallback.disabled = true;
+          control.appendChild(fallback);
+        }
+      }
+    } else {
+      control = document.createElement('input');
+      control.type = 'text';
+      control.placeholder = 'value';
+      if (existingValue) control.value = existingValue;
+    }
+    control.className = 'condition-value';
+    control.style.flex = '1';
+    return control;
+  }
+
+  function updateConditionButtonState(fields) {
+    if (!propAddCondition || !propConditionsList) return;
+    if (!isConditionToggleOn()) {
+      propAddCondition.disabled = true;
+      return;
+    }
+    var existing = propConditionsList.children.length;
+    var hasCapacity = existing < CONDITION_LIMIT;
+    var available = fields || getConditionFieldOptions();
+    var hasFields = !!(available && available.length);
+    var maxByFields = hasFields ? available.length : 0;
+    var hasUnusedField = hasFields && existing < maxByFields;
+    propAddCondition.disabled = !hasCapacity || !hasFields || !hasUnusedField;
+  }
+
+  function getConditionFieldSelections(excludeSelect) {
+    if (!propConditionsList) return [];
+    var rows = propConditionsList.querySelectorAll('.condition-row');
+    var selections = [];
+    rows.forEach(function(row){
+      var sel = row.querySelector('.condition-field');
+      if (!sel || sel === excludeSelect) return;
+      if (sel.value) selections.push(sel.value);
+    });
+    return selections;
+  }
+
+  function setDefaultConditionField(select) {
+    if (!select || select.value) return;
+    var used = getConditionFieldSelections(select);
+    for (var i = 0; i < select.options.length; i++) {
+      var opt = select.options[i];
+      if (!opt.value) continue;
+      if (used.indexOf(opt.value) === -1) {
+        select.value = opt.value;
+        break;
+      }
+    }
+  }
+
+  function updateConditionFieldAvailability() {
+    if (!propConditionsList) return;
+    var rows = propConditionsList.querySelectorAll('.condition-row');
+    var counts = {};
+    rows.forEach(function(row){
+      var sel = row.querySelector('.condition-field');
+      if (!sel || !sel.value) return;
+      counts[sel.value] = (counts[sel.value] || 0) + 1;
+    });
+    rows.forEach(function(row){
+      var sel = row.querySelector('.condition-field');
+      if (!sel) return;
+      var current = sel.value;
+      Array.from(sel.options).forEach(function(opt){
+        if (!opt.value) return;
+        if (opt.value === current) {
+          opt.disabled = false;
+        } else {
+          opt.disabled = (counts[opt.value] || 0) > 0;
+        }
+      });
+    });
+  }
+
+  function initializeConditionRow(row, fields) {
+    if (!row) return;
+    var select = row.querySelector('.condition-field');
+    setDefaultConditionField(select);
+    updateConditionFieldAvailability();
+    updateConditionButtonState();
+  }
+
+  function refreshConditionConnectors() {
+    if (!propConditionsList) return;
+    var rows = propConditionsList.querySelectorAll('.condition-row');
+    rows.forEach(function(row, index){
+      var connector = row.querySelector('.condition-connector');
+      if (!connector) return;
+      connector.style.display = index === 0 ? 'none' : 'flex';
+    });
+  }
+
+  function toggleConditionValueInput(operatorSelect, valueInput) {
+    if (!operatorSelect || !valueInput) return;
+    var disabled = operatorSelect.value === 'is blank';
+    valueInput.disabled = disabled;
+    if (disabled && valueInput.tagName === 'INPUT') valueInput.value = '';
+  }
+
+  function createConditionRow(cond, fields) {
+    var wrap = document.createElement('div');
+    wrap.className = 'condition-row';
+    var connector = document.createElement('div');
+    connector.className = 'condition-connector';
+    var connectorSelect = document.createElement('select');
+    connectorSelect.className = 'condition-connector-select';
+    CONDITION_CONNECTORS.forEach(function(option){
+      var opt = document.createElement('option');
+      opt.value = option.value;
+      opt.textContent = option.label;
+      connectorSelect.appendChild(opt);
+    });
+    connectorSelect.value = (cond && cond.connector) ? cond.connector : 'and';
+    connector.appendChild(connectorSelect);
+    wrap.appendChild(connector);
+
+    var content = document.createElement('div');
+    content.className = 'condition-row-content';
+    var fldSel = document.createElement('select');
+    fldSel.className = 'condition-field';
+    fldSel.style.flex = '1';
+    var available = (fields || []).slice();
+    if (cond && cond.field && !available.some(function(opt){ return opt.value === cond.field; })) {
+      available.push({ value: cond.field, label: cond.field + ' (' + cond.field + ')', disabled: true });
+    }
+    if (!available.length) {
+      var placeholder = document.createElement('option');
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      placeholder.textContent = 'No eligible fields';
+      fldSel.appendChild(placeholder);
+    } else {
+      available.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt.value;
+        o.textContent = opt.label;
+        if (opt.disabled) o.disabled = true;
+        if (cond && cond.field === opt.value) o.selected = true;
+        fldSel.appendChild(o);
+      });
+    }
+    var opSel = document.createElement('select');
+    opSel.className = 'condition-operator';
+    CONDITION_OPERATORS.forEach(function(option){
+      var o = document.createElement('option');
+      o.value = option.value;
+      o.textContent = option.label;
+      opSel.appendChild(o);
+    });
+    if (cond && cond.operator) opSel.value = cond.operator;
+    var valueControl = createConditionValueControl(cond ? cond.field : fldSel.value, cond ? cond.value : '');
+    toggleConditionValueInput(opSel, valueControl);
+    opSel.addEventListener('change', function(){ toggleConditionValueInput(opSel, valueControl); });
+    fldSel.addEventListener('change', function(){
+      var replacement = createConditionValueControl(fldSel.value, null);
+      content.replaceChild(replacement, valueControl);
+      valueControl = replacement;
+      toggleConditionValueInput(opSel, valueControl);
+      updateConditionFieldAvailability();
+      updateConditionButtonState();
+    });
+    var del = document.createElement('button');
+    del.className = 'btn condition-delete';
+    del.textContent = '✕';
+    del.style.padding = '4px 8px';
+    del.type = 'button';
+    del.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      wrap.remove();
+      refreshConditionConnectors();
+      updateConditionFieldAvailability();
+      updateConditionButtonState();
+    });
+    content.appendChild(fldSel);
+    content.appendChild(opSel);
+    content.appendChild(valueControl);
+    content.appendChild(del);
+    wrap.appendChild(content);
+    return wrap;
+  }
+
+  function ensureHtmlOption(value) {
+    if (!propHtml || !value) return;
+    for (var i = 0; i < propHtml.options.length; i++) {
+      if (propHtml.options[i].value === value) return;
+    }
+    var option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    propHtml.appendChild(option);
+    updateHtmlSelectOptions(selectedFieldId);
+  }
+
+  // selection / properties panel logic
+  function selectFieldForProperties(id) {
+    selectedFieldId = id;
+    var row = fieldConfigContainer.querySelector('[data-id="' + id + '"]');
+    // if not found, collapse/restore properties and exit
+    if (!row) {
+      if (propertiesForm) propertiesForm.style.display = 'none';
+      restorePropertiesForm();
+      return;
+    }
+    // move the existing properties form under the clicked row so it expands inline
+    movePropertiesFormUnderRow(row);
+    if (propertiesForm) propertiesForm.style.display = '';
+
+    // read values from the stored cfg object on the row
+    var cfg = row._cfg || {};
+    var isStandardForHtml = (cfg.id && cfg.id.indexOf('custom_') !== 0 && cfg.type === 'field');
+    var isTextBlock = cfg.type === 'text';
+    setTimeout(function(){
+      var target = (isTextBlock && propTextEditor) ? propTextEditor : propLabel;
+      if (!target) return;
+      try { target.focus({ preventScroll: true }); }
+      catch (err) { var x=window.scrollX||window.pageXOffset, y=window.scrollY||window.pageYOffset; try{target.focus();}catch(e){} window.scrollTo(x,y); }
+    }, 40);
+
+    // toggle properties form sections based on field type (text block vs input field)
+    if (propLabelWrapper) propLabelWrapper.style.display = isTextBlock ? 'none' : '';
+    if (propRichEditorWrapper) propRichEditorWrapper.style.display = isTextBlock ? '' : 'none';
+    if (fieldControls) fieldControls.style.display = isTextBlock ? 'none' : '';
+
+    if (propHtmlLabel) propHtmlLabel.style.display = isTextBlock ? 'none' : '';
+    var showReadonlyHtml = !isTextBlock && isStandardForHtml;
+    if (propHtml) propHtml.style.display = (showReadonlyHtml || isTextBlock) ? 'none' : '';
+    if (propHtmlReadOnly) propHtmlReadOnly.style.display = showReadonlyHtml ? '' : 'none';
+    if (propPlaceholderLabel) propPlaceholderLabel.style.display = isTextBlock ? 'none' : '';
+    if (propPlaceholder) propPlaceholder.style.display = isTextBlock ? 'none' : '';
+    if (propHelpLabel) propHelpLabel.style.display = isTextBlock ? 'none' : '';
+    if (propHelp) propHelp.style.display = isTextBlock ? 'none' : '';
+    if (propTypeLabel) propTypeLabel.style.display = isTextBlock ? 'none' : '';
+    if (propTypeReadOnly) propTypeReadOnly.style.display = 'none';
+    if (propType) {
+      if (isTextBlock) {
+        propType.style.display = 'none';
+        propType.disabled = false;
+      }
+    }
+    if (propWidthLabel) propWidthLabel.style.display = isTextBlock ? 'none' : '';
+    if (propWidth) propWidth.style.display = isTextBlock ? 'none' : '';
+    if (propRequiredLabel) propRequiredLabel.style.display = isTextBlock ? 'none' : '';
+    if (propRequired) propRequired.style.display = isTextBlock ? 'none' : '';
+    if (propHiddenLabel) propHiddenLabel.style.display = isTextBlock ? 'none' : '';
+    if (propHidden) propHidden.style.display = isTextBlock ? 'none' : '';
+    if (propConditionsSection) propConditionsSection.style.display = isTextBlock ? 'none' : '';
+    setConditionToggleAvailability(!isTextBlock);
+    if (!isTextBlock) {
+      var hasExplicitToggle = typeof cfg.conditionsEnabled === 'boolean';
+      var desiredConditionState = hasExplicitToggle ? !!cfg.conditionsEnabled : ((cfg.conditions || []).length > 0);
+      setConditionToggleState(desiredConditionState);
+    }
+    if (propOptionsWrapper) propOptionsWrapper.style.display = isTextBlock ? 'none' : propOptionsWrapper.style.display;
+
+    // Values
+    var textValue = cfg.text || '';
+    propLabel.value = isTextBlock ? stripHtml(textValue) : (cfg.label || '');
+    if (isTextBlock) {
+      if (propFontSize) propFontSize.value = cfg.fontSize || 'body';
+      var alignValue = cfg.align || 'left';
+      setTextEditorAlignment(alignValue);
+      if (propUrl) propUrl.value = cfg.url || '';
+      if (propLinkTarget) propLinkTarget.value = cfg.target || '_blank';
+      if (propTextEditor) propTextEditor.innerHTML = textValue || 'Text block';
+      updateLinkStatus();
+    } else {
+      if (isStandardForHtml) {
+        if (propHtmlReadOnly) propHtmlReadOnly.value = cfg.html || '';
+        if (propHtml) {
+          propHtml.value = cfg.html || '';
+          propHtml.disabled = true;
+        }
+      } else {
+        if (propHtmlReadOnly) propHtmlReadOnly.value = '';
+        if (propHtml) {
+          var htmlValue = cfg.html || '';
+          if (htmlValue) ensureHtmlOption(htmlValue);
+          propHtml.disabled = false;
+          propHtml.value = htmlValue;
+          updateHtmlSelectOptions(cfg.id);
+        }
+      }
+      propPlaceholder.value = cfg.placeholder || '';
+      propHelp.value = cfg.help || '';
+      var currentFieldType = cfg.fieldType || (cfg.type === 'text' ? 'textarea' : 'text');
+      if (isStandardForHtml) {
+        if (propTypeReadOnly) {
+          propTypeReadOnly.style.display = '';
+          propTypeReadOnly.value = getFieldTypeLabel(currentFieldType);
+        }
+        if (propType) {
+          propType.value = currentFieldType;
+          propType.disabled = true;
+          propType.style.display = 'none';
+        }
+      } else {
+        if (propTypeReadOnly) {
+          propTypeReadOnly.style.display = 'none';
+        }
+        if (propType) {
+          propType.disabled = false;
+          propType.style.display = '';
+          propType.value = currentFieldType;
+        }
+      }
+      propWidth.value = cfg.width || 'full';
+      propRequired.checked = !!cfg.required;
+    }
+    var showValue = (typeof cfg.show === 'undefined') ? true : !!cfg.show;
+    if (propHidden) propHidden.checked = !showValue;
+    resetPropOptionsEditor();
+    if (propConditionAction) propConditionAction.value = cfg.conditionAction || 'show';
+    if (propConditionsList) {
+      propConditionsList.innerHTML = '';
+      if (!isTextBlock) {
+        var conditionFieldOptions = getConditionFieldOptions();
+        (cfg.conditions || []).forEach(function(c){
+          var conditionRow = createConditionRow(c, conditionFieldOptions);
+          propConditionsList.appendChild(conditionRow);
+          initializeConditionRow(conditionRow, conditionFieldOptions);
+        });
+        refreshConditionConnectors();
+        updateConditionFieldAvailability();
+        updateConditionButtonState();
+      } else {
+        updateConditionButtonState([]);
+      }
+    }
+    updateLinkStatus();
+
+    // Step control visibility
+    if (propStep) {
+      var isWizardLayout = layoutSelect.value === 'wizard';
+      // Hide step for text blocks
+      propStep.style.display = (isWizardLayout && !isTextBlock) ? '' : 'none';
+      if (propStepLabel) propStepLabel.style.display = (isWizardLayout && !isTextBlock) ? '' : 'none';
+      propStep.value = cfg.step || 1;
+    }
+
+    var optionsType = cfg.fieldType || (propType ? propType.value : 'text');
+    var shouldShowOptions = !isTextBlock && isChoiceFieldType(optionsType);
+    if (shouldShowOptions) {
+      renderPropOptionsEditor(cfg);
+    }
+
+  }
+
+  // apply properties back to row and refresh preview
+  propApply.addEventListener('click', function(e){
+    e.preventDefault();
+    if (!selectedFieldId) return;
+    var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+    if (!row) return;
+
+    var cfg = row._cfg || {};
+    if (cfg.type === 'text') {
+      cfg.text = propTextEditor ? propTextEditor.innerHTML : (propLabel.value || cfg.text || '');
+      cfg.fontSize = propFontSize ? propFontSize.value : (cfg.fontSize || 'body');
+      cfg.align = propAlign ? propAlign.value : (cfg.align || 'left');
+      cfg.url = propUrl ? propUrl.value : (cfg.url || '');
+      cfg.target = propLinkTarget ? propLinkTarget.value : (cfg.target || '_blank');
+      cfg.show = (typeof cfg.show === 'undefined') ? true : !!cfg.show;
+      if (propStep && layoutSelect.value === 'wizard') cfg.step = parseInt(propStep.value, 10) || 1;
+    } else {
+      cfg.label = propLabel.value || cfg.label;
+      // don't let standard fields change html
+      var isStandard = (cfg.id && cfg.id.indexOf('custom_') !== 0 && cfg.type === 'field');
+      if (!isStandard) cfg.html = propHtml.value || cfg.html;
+      cfg.placeholder = propPlaceholder.value || '';
+      cfg.help = propHelp.value || '';
+      if (propType && !isStandard) {
+        cfg.fieldType = propType.value || cfg.fieldType;
+      }
+      var effectiveFieldType = cfg.fieldType || (propType ? propType.value : 'text');
+      if (isChoiceFieldType(effectiveFieldType)) {
+        var optionValues = collectOptionValues();
+        if (!optionValues.length) optionValues = ['Option 1', 'Option 2'];
+        cfg.options = optionValues;
+      } else {
+        cfg.options = [];
+      }
+      cfg.width = propWidth.value || cfg.width || 'full';
+      cfg.show = propHidden ? !propHidden.checked : true;
+      cfg.required = propRequired.checked;
+      var toggleOn = isConditionToggleOn();
+      cfg.conditionAction = propConditionAction ? propConditionAction.value : (cfg.conditionAction || 'show');
+      cfg.conditionsEnabled = toggleOn;
+      cfg.conditions = [];
+      if (propConditionsList) {
+        var rows = propConditionsList.querySelectorAll('.condition-row');
+        rows.forEach(function(row, index){
+          var fieldSel = row.querySelector('.condition-field');
+          var operatorSel = row.querySelector('.condition-operator');
+          var valueInput = row.querySelector('.condition-value');
+          var connectorSel = row.querySelector('.condition-connector-select');
+          if (!fieldSel || !fieldSel.value) return;
+          var operator = operatorSel ? operatorSel.value : 'is';
+          var value = operator === 'is blank' ? '' : (valueInput ? valueInput.value.trim() : '');
+          var connector = connectorSel ? connectorSel.value : (index === 0 ? 'and' : 'and');
+          cfg.conditions.push({ field: fieldSel.value, operator: operator, value: value, connector: connector });
+        });
+      }
+      if (propStep && layoutSelect.value === 'wizard') cfg.step = parseInt(propStep.value, 10) || 1;
+    }
+    row._cfg = Object.assign({}, cfg);
+    updateFieldConditionIndicator(row);
+
+    // update inline label and html display in the row
+    var labInput = row.querySelector('.label-input'); if (labInput) labInput.value = cfg.label;
+    var htmlIn = row.querySelector('.html-name-input'); var htmlSel = row.querySelector('.html-name-select');
+    if (htmlIn) htmlIn.value = cfg.html; else if (htmlSel) htmlSel.value = cfg.html;
+
+    updateHtmlSelectOptions(selectedFieldId);
+    renderPreview();
+  });
+
+  // Add condition action: create an empty row populated with current available fields
+  propAddCondition.addEventListener('click', function(e){
+    e.preventDefault();
+    if (!propConditionsList || !isConditionToggleOn()) return;
+    if (propConditionsList.children.length >= CONDITION_LIMIT) return;
+    var availableFields = getConditionFieldOptions();
+    if (!availableFields.length) return;
+    var newRow = createConditionRow(null, availableFields);
+    propConditionsList.appendChild(newRow);
+    initializeConditionRow(newRow, availableFields);
+    refreshConditionConnectors();
+    updateConditionFieldAvailability();
+  });
+
+  if (propAddOption) {
+    propAddOption.type = 'button';
+    propAddOption.addEventListener('click', function(e){
+      e.preventDefault();
+      if (!propOptionsList) return;
+      propOptionsList.appendChild(createOptionInputRow(''));
+      if (propOptionsWrapper) propOptionsWrapper.style.display = '';
+    });
+  }
+
+  if (propOptionsList) {
+    propOptionsList.addEventListener('click', function(e){
+      if (e.target.classList.contains('option-delete')) {
+        e.preventDefault();
+        var row = e.target.closest('.option-row');
+        if (row) row.remove();
+      }
+    });
+  }
+
+  if (propType) {
+    propType.addEventListener('change', function(){
+      if (isChoiceFieldType(propType.value)) {
+        var row = selectedFieldId ? fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]') : null;
+        var cfg = row ? row._cfg : null;
+        renderPropOptionsEditor(cfg || { options: collectOptionValues() });
+      } else {
+        resetPropOptionsEditor();
+      }
+    });
+  }
+
+  if (propConditionToggle) {
+    propConditionToggle.addEventListener('click', function(){
+      if (propConditionToggle.disabled) return;
+      setConditionToggleState(!isConditionToggleOn());
+    });
+  }
+
+  var metaAddButtons = document.querySelectorAll('.meta-add-btn');
+  metaAddButtons.forEach(function(btn){
+    var key = btn.getAttribute('data-meta-key');
+    btn.addEventListener('click', function(){ handleMetaAdd(key); });
+  });
+  FORM_META_KEYS.forEach(function(key){
+    var input = metaInputs[key];
+    if (!input) return;
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleMetaAdd(key);
+      }
+    });
+  });
+
+  richEditorCommands.forEach(function(cmd){
+    cmd.addEventListener('click', function(){
+      var command = cmd.getAttribute('data-command');
+      document.execCommand(command, false, null);
+      if (propTextEditor) propTextEditor.focus();
+    });
+  });
+
+  alignButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var align = btn.getAttribute('data-align');
+      setTextEditorAlignment(align);
+      if (propTextEditor) propTextEditor.focus();
+    });
+  });
+
+  setTextEditorAlignment((propAlign && propAlign.value) ? propAlign.value : 'left');
+
+  if (propInsertLinkBtn) {
+    propInsertLinkBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      openLinkModal();
+    });
+  }
+  if (linkModalClose) {
+    linkModalClose.addEventListener('click', function(){ closeLinkModal(); });
+  }
+  if (linkModalCancel) {
+    linkModalCancel.addEventListener('click', function(){ closeLinkModal(); });
+  }
+  if (linkModalSave) {
+    linkModalSave.addEventListener('click', function(e){
+      e.preventDefault();
+      applyLinkFromModal();
+    });
+  }
+
+  // click outside to clear selection
+  document.addEventListener('click', function(e){
+    // treat clicks inside the moved properties form as clicks inside the form
+    if (!e.target.closest('.field-row') && !e.target.closest('#properties-form')) {
+      selectedFieldId = null;
+      var all = fieldConfigContainer.querySelectorAll('.field-row');
+      all.forEach(function(r){ r.classList.remove('selected'); });
+      if (propertiesForm) propertiesForm.style.display = 'none';
+      // restore the properties-form back to its hidden container state
+      restorePropertiesForm();
+    }
+  });
+
+  // helper: move the shared properties form under the selected row (inline)
+  function movePropertiesFormUnderRow(row) {
+    if (!propertiesForm || !row) return;
+    propertiesForm.classList.add('inline-properties');
+    // ensure title is present when inline
+    var title = propertiesForm.querySelector('.form-properties-title');
+    if (!title) {
+      var t = document.createElement('div');
+      t.className = 'form-properties-title';
+      t.textContent = 'Field properties';
+      propertiesForm.insertBefore(t, propertiesForm.firstChild);
+    }
+    var next = row.nextSibling;
+    // if already placed correctly, don't move
+    if (propertiesForm.parentNode === fieldConfigContainer && propertiesForm.previousSibling === row) return;
+    fieldConfigContainer.insertBefore(propertiesForm, next);
+  }
+
+  // helper: restore the properties form back into a neutral hidden state
+  function restorePropertiesForm() {
+    if (!propertiesForm) return;
+    propertiesForm.classList.remove('inline-properties');
+    propertiesForm.style.display = 'none';
+  }
+
+  function generateUniqueFieldId(baseId) {
+    var base = baseId || ('field_' + Date.now());
+    var candidate = base;
+    var counter = 1;
+    while (fieldConfigContainer.querySelector('[data-id="' + candidate + '"]')) {
+      candidate = base + '_' + counter;
+      counter++;
+    }
+    return candidate;
+  }
+
+  function openExistingFieldModal() {
+    if (!existingFieldModal) return;
+    renderExistingFieldList();
+    existingFieldModal.style.display = 'flex';
+    existingFieldModal.setAttribute('aria-hidden', 'false');
+    setTimeout(function(){
+      if (existingFieldModalClose) existingFieldModalClose.focus();
+    }, 40);
+  }
+
+  function closeExistingFieldModal() {
+    if (!existingFieldModal) return;
+    existingFieldModal.style.display = 'none';
+    existingFieldModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function renderExistingFieldList() {
+    if (!existingFieldList) return;
+    existingFieldList.innerHTML = '';
+    if (!Array.isArray(EXISTING_FIELD_LIBRARY) || !EXISTING_FIELD_LIBRARY.length) {
+      var empty = document.createElement('p');
+      empty.textContent = 'No saved fields available yet.';
+      existingFieldList.appendChild(empty);
+      return;
+    }
+    var groups = {};
+    EXISTING_FIELD_LIBRARY.forEach(function(entry){
+      var key = entry.group || 'Other';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(entry);
+    });
+    var usedNames = getUsedHtmlNames();
+    Object.keys(groups).forEach(function(groupName){
+      var groupWrap = document.createElement('div');
+      groupWrap.className = 'existing-field-group';
+      var heading = document.createElement('h5');
+      var headingLabel = groupName && groupName.toLowerCase().indexOf('field') !== -1 ? groupName : groupName + ' fields';
+      heading.textContent = headingLabel;
+      groupWrap.appendChild(heading);
+      var list = document.createElement('div');
+      list.className = 'existing-field-list';
+      groups[groupName].forEach(function(entry){
+        var disabled = !!(entry.html && usedNames[entry.html]);
+        var item = document.createElement('div');
+        item.className = 'existing-field-item' + (disabled ? ' disabled' : '');
+        var details = document.createElement('div');
+        details.className = 'existing-field-item-details';
+        var title = document.createElement('span');
+        title.className = 'existing-field-item-title';
+        title.textContent = entry.label || entry.id;
+        var meta = document.createElement('span');
+        meta.className = 'existing-field-item-meta';
+        var htmlName = entry.html || 'unmapped';
+        meta.textContent = getFieldTypeLabel(entry.fieldType) + ' • HTML: ' + htmlName;
+        details.appendChild(title);
+        details.appendChild(meta);
+        item.appendChild(details);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-secondary';
+        btn.textContent = disabled ? 'Added' : 'Add field';
+        btn.disabled = disabled;
+        if (!disabled) {
+          btn.addEventListener('click', function(){ handleAddExistingField(entry); });
+        }
+        item.appendChild(btn);
+        list.appendChild(item);
+      });
+      groupWrap.appendChild(list);
+      existingFieldList.appendChild(groupWrap);
+    });
+  }
+
+  function handleAddExistingField(entry) {
+    if (!entry) return;
+    if (entry.html) {
+      var used = getUsedHtmlNames();
+      if (used[entry.html]) {
+        renderExistingFieldList();
+        return;
+      }
+    }
+    var clone = JSON.parse(JSON.stringify(entry));
+    clone.type = 'field';
+    clone.id = generateUniqueFieldId(clone.id || ('field_' + Date.now()));
+    clone.show = true;
+    clone.conditions = [];
+    clone.conditionsEnabled = false;
+    clone.step = clone.step || 1;
+    clone.options = Array.isArray(clone.options) ? clone.options.slice() : [];
+    buildFieldRow(clone);
+    selectFieldForProperties(clone.id);
+    renderPreview();
+    renderExistingFieldList();
+    closeExistingFieldModal();
+  }
+
+  function setFieldPanelCollapsed(collapsed) {
+    if (!fieldPanelBody || !fieldPanelToggle) return;
+    var shouldCollapse = !!collapsed;
+    fieldPanelBody.classList.toggle('collapsed', shouldCollapse);
+    fieldPanelToggle.setAttribute('aria-expanded', shouldCollapse ? 'false' : 'true');
+    fieldPanelToggle.textContent = shouldCollapse ? 'Expand' : 'Collapse';
+  }
+
+  function applyTemplateMetaDefaults(templateName) {
+    var defaults = templateMetaDefaults[templateName] || {};
+    FORM_META_KEYS.forEach(function(key){
+      formMetaState[key] = defaults[key] || '';
+      if (metaInputs[key]) metaInputs[key].value = '';
+      renderMetaField(key);
+    });
+  }
+
+  function renderMetaField(key) {
+    var list = metaChipLists[key];
+    if (!list) return;
+    var fieldWrapper = document.querySelector('.form-meta-field[data-meta-field="' + key + '"]');
+    var inputRow = fieldWrapper ? fieldWrapper.querySelector('.meta-input-row') : null;
+    list.innerHTML = '';
+    var value = formMetaState[key];
+    if (!value) {
+      if (inputRow) inputRow.classList.add('meta-input-row-error');
+      var error = document.createElement('span');
+      error.className = 'meta-error';
+      error.textContent = 'Required — add a value.';
+      list.appendChild(error);
+      return;
+    }
+    if (inputRow) inputRow.classList.remove('meta-input-row-error');
+    var chip = document.createElement('span');
+    chip.className = 'meta-chip';
+    var label = document.createElement('span');
+    label.textContent = value;
+    var remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'meta-chip-remove';
+    remove.setAttribute('aria-label', 'Remove ' + key + ' value');
+    remove.textContent = '✕';
+    remove.addEventListener('click', function(){
+      formMetaState[key] = '';
+      renderMetaField(key);
+      if (metaInputs[key]) metaInputs[key].focus();
+    });
+    chip.appendChild(label);
+    chip.appendChild(remove);
+    list.appendChild(chip);
+  }
+
+  function handleMetaAdd(key) {
+    var input = metaInputs[key];
+    if (!input) return;
+    var value = (input.value || '').trim();
+    if (!value) return;
+    formMetaState[key] = value;
+    input.value = '';
+    renderMetaField(key);
+  }
+
+  function getFieldTypeLabel(type) {
+    var map = {
+      text: 'Text',
+      textarea: 'Textarea',
+      dropdown: 'Dropdown',
+      checkbox: 'Checkbox',
+      number: 'Number',
+      multiselect: 'Multi-select',
+      radio: 'Radio',
+      date: 'Date',
+      time: 'Time',
+      datetime: 'Date & time',
+      email: 'Email',
+      consent: 'Consent'
+    };
+    var lower = (type || '').toLowerCase();
+    return map[lower] || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Text');
+  }
+
+  function setTextEditorAlignment(value) {
+    var align = value || 'left';
+    if (propAlign) propAlign.value = align;
+    alignButtons.forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.align === align);
+    });
+    if (propTextEditor) propTextEditor.style.textAlign = align;
+  }
+
+  function stripHtml(value) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = value || '';
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  function escapeHtml(value) {
+    return (value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function saveSelectionRange() {
+    var sel = window.getSelection && window.getSelection();
+    if (sel && sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+    else savedRange = null;
+  }
+
+  function restoreSelectionRange() {
+    if (!savedRange) return;
+    var sel = window.getSelection && window.getSelection();
+    if (sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }
+  }
+
+  function getAnchorForSelection() {
+    if (!propTextEditor) return null;
+    var sel = window.getSelection && window.getSelection();
+    if (!sel || !sel.anchorNode) return null;
+    var node = sel.anchorNode;
+    while (node && node !== propTextEditor) {
+      if (node.nodeType === 1 && node.tagName === 'A') return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function updateLinkStatus() {
+    if (!propLinkStatus) return;
+    if (!propUrl || !propUrl.value) {
+      propLinkStatus.textContent = 'No link inserted';
+      return;
+    }
+    var anchor = propTextEditor ? propTextEditor.querySelector('a') : null;
+    var label = anchor && anchor.textContent ? anchor.textContent.trim() : 'Link set';
+    propLinkStatus.textContent = label + ' • ' + propUrl.value;
+  }
+
+  function openLinkModal() {
+    if (!linkModal || !propTextEditor) return;
+    var anchor = getAnchorForSelection();
+    var url = anchor ? anchor.getAttribute('href') : (propUrl ? propUrl.value : '');
+    var text = anchor ? anchor.textContent.trim() : (window.getSelection ? window.getSelection().toString().trim() : '');
+    var action = anchor ? (anchor.target === '_blank' ? 'new' : 'current') : ((propLinkTarget && propLinkTarget.value === '_blank') ? 'new' : 'current');
+    if (linkModalUrl) linkModalUrl.value = url;
+    if (linkModalText) linkModalText.value = text;
+    if (linkModalAction) linkModalAction.value = action;
+    saveSelectionRange();
+    linkModal.style.display = 'flex';
+    if (linkModalUrl) linkModalUrl.focus();
+  }
+
+  function closeLinkModal() {
+    if (!linkModal) return;
+    linkModal.style.display = 'none';
+    savedRange = null;
+  }
+
+  function applyLinkFromModal() {
+    if (!linkModal || !linkModalUrl || !propTextEditor) return;
+    var url = linkModalUrl.value.trim();
+    if (!url) return;
+    var text = (linkModalText && linkModalText.value.trim()) || url;
+    var action = linkModalAction ? linkModalAction.value : 'new';
+    var target = action === 'current' ? '_self' : '_blank';
+    restoreSelectionRange();
+    var html = '<a href="' + escapeHtml(url) + '" target="' + target + '"' + (target === '_blank' ? ' rel="noopener noreferrer"' : '') + '>' + escapeHtml(text) + '</a>';
+    document.execCommand('insertHTML', false, html);
+    if (propUrl) propUrl.value = url;
+    if (propLinkTarget) propLinkTarget.value = target;
+    updateLinkStatus();
+    closeLinkModal();
+    if (propTextEditor) propTextEditor.focus();
+  }
+
+
+  // Event wiring
+  if (addExistingFieldBtn) {
+    addExistingFieldBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      openExistingFieldModal();
+    });
+  }
+
+  if (existingFieldModalClose) {
+    existingFieldModalClose.addEventListener('click', function(e){
+      e.preventDefault();
+      closeExistingFieldModal();
+    });
+  }
+
+  if (existingFieldModal) {
+    existingFieldModal.addEventListener('click', function(e){
+      if (e.target === existingFieldModal) {
+        closeExistingFieldModal();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && existingFieldModal && existingFieldModal.getAttribute('aria-hidden') === 'false') {
+      closeExistingFieldModal();
+    }
+  });
+
+  refreshBtn.addEventListener('click', renderPreview);
+  addFieldBtn.addEventListener('click', function(e){ e.preventDefault(); addCustomField(); });
+  addTextBtn.addEventListener('click', function(e){ e.preventDefault(); addTextBlock(); });
+  templateSelect.addEventListener('change', function () {
+    loadTemplate(templateSelect.value);
+    applyTemplateMetaDefaults(templateSelect.value);
+    updateStepVisibility();
+    currentStep = 1;
+    renderPreview();
+  });
+  densitySelect.addEventListener('change', renderPreview);
+  layoutSelect.addEventListener('change', function(){
+    if (layoutSelect.value !== 'wizard') currentStep = 1;
+    updateStepVisibility();
+    renderPreview();
+  });
+  numStepsSelect.addEventListener('change', function(){
+    var maxSteps = parseInt(numStepsSelect.value, 10) || 3;
+    if (currentStep > maxSteps) currentStep = maxSteps;
+    renderPreview();
+  });
+
+  if (fieldPanelToggle) {
+    fieldPanelToggle.addEventListener('click', function(){
+      var currentlyCollapsed = fieldPanelBody && fieldPanelBody.classList.contains('collapsed');
+      setFieldPanelCollapsed(!currentlyCollapsed);
+    });
+    setFieldPanelCollapsed(false);
+  }
+
+  // update prop-step visibility whenever layout changes
+  function updatePropertyStepVisibility() {
+    if (propStep) {
+      var isWizardLayout = layoutSelect.value === 'wizard';
+      propStep.style.display = isWizardLayout ? '' : 'none';
+      if (propStepLabel) propStepLabel.style.display = isWizardLayout ? '' : 'none';
+    }
+  }
+  layoutSelect.addEventListener('change', updatePropertyStepVisibility);
+  // initial call
+  updatePropertyStepVisibility();
+
+  // adapt layout based on dialog container width (works regardless of viewport)
+  function adaptLayoutToDialogWidth() {
+    var dialogEl = document.querySelector('.dialog');
+    var grid = document.querySelector('.layout-grid');
+    if (!dialogEl || !grid) return;
+    var w = dialogEl.clientWidth || dialogEl.offsetWidth || 0;
+    if (w <= 590) grid.classList.add('narrow'); else grid.classList.remove('narrow');
+  }
+  window.addEventListener('resize', adaptLayoutToDialogWidth);
+  // ensure layout adapts when template changes (content width can change)
+  templateSelect.addEventListener('change', adaptLayoutToDialogWidth);
+  // initial call before first render
+  adaptLayoutToDialogWidth();
+
+  // Initial load
+  loadTemplate(templateSelect.value);
+  updateStepVisibility();
+  applyTemplateMetaDefaults(templateSelect.value);
+  renderPreview();
+</script>
+</body>
+</html>
