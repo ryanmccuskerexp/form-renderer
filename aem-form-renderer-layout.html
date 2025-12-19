@@ -884,8 +884,12 @@
     .field-row .row-line .spacer { flex:1 1 auto; }
     .field-row .kind-label { font-size:10px; color:#999; }
     .field-row-meta { display:flex; align-items:center; gap:6px; }
+    .field-row-delete { border:none; background:transparent; color:#c62828; font-size:12px; cursor:pointer; padding:2px 6px; border-radius:4px; }
+    .field-row-delete:hover { background:#fdecea; color:#b71c1c; }
+    .field-row-delete:focus { outline:2px solid #f5c2c7; outline-offset:1px; }
     .field-condition-indicator { display:none; padding:1px 6px; border-radius:999px; background:#fef3c7; color:#92400e; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
     .field-condition-indicator.active { display:inline-flex; }
+    .preview-condition-indicator { display:inline-flex; margin-left:6px; padding:1px 6px; border-radius:999px; background:#fef3c7; color:#92400e; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; vertical-align:middle; }
     .field-required-hidden-warning { display:none; align-items:flex-start; gap:6px; margin-top:6px; font-size:11px; color:#b91c1c; }
     .field-required-hidden-warning .field-required-hidden-icon { line-height:1; margin-top:1px; }
     .field-row.required-hidden .field-required-hidden-warning { display:flex; }
@@ -1385,6 +1389,8 @@
       <h2>Form Renderer</h2>
     </div>
     <div class="dialog-header-actions">
+      <button id="renderer-undo" type="button" aria-label="Undo" title="Undo">⟲</button>
+      <button id="renderer-redo" type="button" aria-label="Redo" title="Redo">⟳</button>
       <button id="renderer-close" type="button" aria-label="Close">✕</button>
       <button id="renderer-publish" type="button" aria-label="Publish">✓</button>
     </div>
@@ -1847,8 +1853,8 @@
             </label>
             <label for="layoutType">Layout type
               <select id="layoutType">
-                <option value="single" selected>Single-step</option>
-                <option value="wizard">Wizard</option>
+                <option value="single" selected>In-line</option>
+                <option value="wizard">Multi-step</option>
                 <option value="card">Card</option>
               </select>
             </label>
@@ -1926,7 +1932,7 @@
           <div class="form-display-panel-note">These values update the visible title/subtext above the form and the primary submit button label.</div>
 
           <div id="wizard-settings" style="display:none; margin-top:12px;">
-            <div class="form-display-panel-note" style="margin-top:0; font-weight:600;">Wizard step labels</div>
+            <div class="form-display-panel-note" style="margin-top:0; font-weight:600;">Multi-step step labels</div>
             <div id="wizard-settings-grid" class="form-display-grid"></div>
             <div class="form-display-panel-note">Shown in the multi-step stepper and primary buttons.</div>
           </div>
@@ -2516,15 +2522,111 @@
   var rendererBannerClose = document.getElementById('renderer-banner-close');
   var bannerHideTimer = null;
 
-  function showRendererBanner(message) {
+  function showRendererBanner(message, options) {
     if (!rendererBanner || !rendererBannerMessage) return;
     rendererBannerMessage.textContent = message || '';
     rendererBanner.style.display = message ? 'block' : 'none';
     if (bannerHideTimer) { clearTimeout(bannerHideTimer); bannerHideTimer = null; }
-    if (message) {
+    if (message && !(options && options.sticky)) {
       bannerHideTimer = setTimeout(function(){
         if (rendererBanner) rendererBanner.style.display = 'none';
       }, 6500);
+    }
+  }
+
+  function formatFieldLabelForMessage(field) {
+    if (!field) return 'Untitled';
+    var label = (field.label || '').trim();
+    if (label) return label;
+    var html = (field.html || '').trim();
+    if (html) return html;
+    return field.id || 'Untitled';
+  }
+
+  function getRendererValidationReport(config) {
+    var report = { errors: [], warnings: [] };
+    if (!Array.isArray(config)) return report;
+
+    // Duplicate HTML name mappings
+    var map = {};
+    config.forEach(function(field){
+      if (!field || field.type !== 'field') return;
+      if (field.show === false) return;
+      var html = (field.html || '').trim();
+      if (!html) return;
+      if (!map[html]) map[html] = [];
+      map[html].push(field);
+    });
+    Object.keys(map).forEach(function(html){
+      if ((map[html] || []).length < 2) return;
+      var names = map[html].map(function(f){ return '"' + formatFieldLabelForMessage(f) + '"'; }).join(', ');
+      report.errors.push('Duplicate HTML name "' + html + '" used by ' + names + '.');
+    });
+
+    // Required fields that are explicitly hidden (error)
+    config.forEach(function(field){
+      if (!field || field.type !== 'field') return;
+      if (!field.required) return;
+      if (field.show === false) {
+        report.errors.push('Required field "' + formatFieldLabelForMessage(field) + '" is set to hidden.');
+      }
+    });
+
+    // Required fields that can be hidden by conditions (warning), and ones that are currently hidden (error)
+    config.forEach(function(field){
+      if (!field || field.type !== 'field') return;
+      if (!field.required) return;
+      if (!hasActiveConditions(field)) return;
+
+      report.warnings.push('Required field "' + formatFieldLabelForMessage(field) + '" is conditional and may be hidden.');
+
+      var key = (field.html || field.id || '').trim();
+      if (!key) return;
+      var entry = getPreviewFieldEntry(key);
+      if (!entry || !entry.element) return;
+      var hiddenNow = !shouldFieldBeVisibleUnderConditions(field);
+      if (hiddenNow) {
+        report.errors.push('Required field "' + formatFieldLabelForMessage(field) + '" is currently hidden by conditions.');
+      }
+    });
+
+    return report;
+  }
+
+  function syncRendererValidationBanner(config) {
+    var report = getRendererValidationReport(config);
+    if (report.errors && report.errors.length) {
+      showRendererBanner('Validation errors: ' + report.errors.join(' '), { sticky: false });
+      return report;
+    }
+    if (report.warnings && report.warnings.length) {
+      showRendererBanner('Validation warning: ' + report.warnings.join(' '), { sticky: false });
+      return report;
+    }
+    showRendererBanner('');
+    return report;
+  }
+
+  function getStickyHeaderOffsetPx() {
+    // Account for the sticky CTA banner so scroll lands at the true top of the component.
+    var offset = 0;
+    var banner = document.querySelector('.site-cta-banner.sticky-top');
+    if (banner && banner.getBoundingClientRect) {
+      offset += banner.getBoundingClientRect().height || 0;
+    }
+    return Math.ceil(offset + 8);
+  }
+
+  function scrollToElementTop(el, behavior) {
+    if (!el || !el.getBoundingClientRect) return;
+    var rect = el.getBoundingClientRect();
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var top = rect.top + scrollTop - getStickyHeaderOffsetPx();
+    if (top < 0) top = 0;
+    try {
+      window.scrollTo({ top: top, behavior: behavior || 'smooth' });
+    } catch (e) {
+      window.scrollTo(0, top);
     }
   }
   if (rendererBannerClose) {
@@ -2889,11 +2991,11 @@
   ];
 
   var FORM_DISPLAY_DEFAULTS = {
-    title: 'Talk to our team',
+    title: 'Let’s power opportunities together.',
     subtitle: 'EXPERIAN BUSINESS',
-    subtext: 'We typically respond within 1 business day.',
+    subtext: 'We’re here to help. If you’d like to learn more about our business solutions, please fill out the form below.',
     telephone: '1 888 397 3742',
-    description: 'Share more about your project, timeline, budget, or integration needs.',
+    description: 'Personal credit report assistance is not available here. If you have questions or issues related to your personal credit report, disputes or fraud alerts, visit Experian.com/help.\n\nIf you need assistance with your small business credit report, please visit Experian.com/small-business.',
     align: 'left',
     buttonText: 'Submit'
   };
@@ -2951,6 +3053,17 @@
     };
   }
 
+  function setFormDisplayState(state) {
+    if (!state) return;
+    if (displayTitleInput) displayTitleInput.value = state.title || '';
+    if (displaySubtitleInput) displaySubtitleInput.value = state.subtitle || '';
+    if (displaySubtextInput) displaySubtextInput.value = state.subtext || '';
+    if (displayTelephoneInput) displayTelephoneInput.value = state.telephone || '';
+    if (displayDescriptionInput) displayDescriptionInput.value = state.description || '';
+    if (displayAlignSelect) displayAlignSelect.value = sanitizeDisplayAlign(state.align || 'left');
+    if (displayButtonTextInput) displayButtonTextInput.value = state.buttonText || '';
+  }
+
   function hasDisplayContent(displayState) {
     if (!displayState) return false;
     return !!(displayState.title || displayState.subtitle || displayState.description || displayState.subtext || displayState.telephone);
@@ -2977,10 +3090,15 @@
     }
 
     if (displayState.description) {
-      var desc = document.createElement('p');
-      desc.className = 'form-display-description';
-      desc.textContent = displayState.description;
-      block.appendChild(desc);
+      var raw = String(displayState.description);
+      var paragraphs = raw.split(/\n\s*\n/).map(function(p){ return (p || '').trim(); }).filter(Boolean);
+      if (!paragraphs.length) paragraphs = [raw.trim()];
+      paragraphs.forEach(function(text){
+        var desc = document.createElement('p');
+        desc.className = 'form-display-description';
+        desc.textContent = text.replace(/\n+/g, ' ');
+        block.appendChild(desc);
+      });
     }
 
     if (displayState.subtext) {
@@ -3696,6 +3814,15 @@
     }
     previewEl.innerHTML = '';
 
+    // Published render: conditions should function, but no visible "Conditional field" badges/placeholders.
+    previewConditionUiShowIndicator = false;
+    previewConditionUiShowPlaceholder = false;
+    previewConditionHideMode = 'collapse';
+
+    // Rebuild conditional engine state for this render target.
+    previewFieldRegistry = {};
+    previewDependencyMap = {};
+
     injectHiddenMetadataInputs(previewEl, publishedState ? publishedState.hiddenMetadata : null);
 
     var allowHorizontalDisplay = layout !== 'wizard';
@@ -3722,7 +3849,8 @@
         if (!item || !item.show) return;
         var normalized = normalizeStep(item.step, maxSteps);
         if (normalized !== currentStep) return;
-        appendPreviewItem(item, fieldTarget, density, layout);
+        var element = appendPreviewItem(item, fieldTarget, density, layout);
+        handleRenderedPreviewField(item, element);
       });
       resolvedStep = currentStep;
     } else {
@@ -3732,10 +3860,14 @@
       }
       cfg.forEach(function(item){
         if (!item || !item.show) return;
-        appendPreviewItem(item, fieldTarget, density, layout);
+        var element = appendPreviewItem(item, fieldTarget, density, layout);
+        handleRenderedPreviewField(item, element);
       });
       resolvedStep = 1;
     }
+
+    // Enable conditional behavior in published Inline/Modal experiences.
+    initializePreviewConditionEngine(cfg, { updateRequiredHiddenWarnings: false });
 
     var buttonLabel = layout === 'wizard'
       ? getWizardPrimaryLabel(resolvedStep, maxSteps, displayState, wizardUi)
@@ -3865,6 +3997,17 @@
   }
 
   function publishRendererAndClose() {
+    // Validate current configuration before publishing.
+    try { renderPreview(); } catch (e) {}
+    var currentCfg = getConfigFromUI();
+    var report = getRendererValidationReport(currentCfg);
+    if (report && report.errors && report.errors.length) {
+      showRendererBanner('Cannot publish: ' + report.errors.join(' '), { sticky: true });
+      return;
+    }
+    if (report && report.warnings && report.warnings.length) {
+      showRendererBanner('Publish warning: ' + report.warnings.join(' '));
+    }
     // capture the state at publish-time so the site CTA reflects what was chosen
     var captureSelect = document.getElementById('exp-capture');
     var capture = captureSelect ? captureSelect.value : 'inline';
@@ -3949,7 +4092,7 @@
       }
       if (publishedState && publishedState.capture === 'inline') {
         if (inlineWrap && !inlineWrap.hidden && typeof inlineWrap.scrollIntoView === 'function') {
-          try { inlineWrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (err) { inlineWrap.scrollIntoView(); }
+          scrollToElementTop(inlineWrap, 'smooth');
           return;
         }
       }
@@ -4102,6 +4245,11 @@
   var previewContainer = document.getElementById('preview');
   var previewFieldRegistry = {};
   var previewDependencyMap = {};
+  var previewConditionEngineUpdateWarnings = true;
+  var previewConditionUiShowIndicator = true;
+  var previewConditionUiShowPlaceholder = true;
+  // 'placeholder' = hide inner + show placeholder; 'collapse' = hide entire field wrapper
+  var previewConditionHideMode = 'placeholder';
   var layoutTag = document.getElementById('layout-tag');
   var templateSelect = document.getElementById('form-template');
   var densitySelect = document.getElementById('density');
@@ -4283,6 +4431,7 @@
           });
           renderCustomHiddenMetadataGroups();
           renderPreview();
+          scheduleHistorySnapshot();
         });
 
         chip.appendChild(label);
@@ -4339,6 +4488,7 @@
     if (customMetaLookupKey) customMetaLookupKey.value = '';
     renderCustomHiddenMetadataGroups();
     renderPreview();
+    scheduleHistorySnapshot();
   }
 
   function setRequestPreviewInputsEnabled(enabledUtms, enabledReferrer) {
@@ -4461,6 +4611,14 @@
   var selectedFieldId = null; // id of selected field for properties panel
   var savedRange = null;
 
+  // Simple history stacks for undo/redo of field list changes.
+  var historyStack = [];
+  var redoStack = [];
+  var HISTORY_LIMIT = 50;
+  var historyDebounceTimer = null;
+  var isRestoringHistory = false;
+  var lastHistorySignature = null;
+
   function attachDragHandlers(row) {
     row.setAttribute('draggable', 'true');
     var handle = row.querySelector('.field-row-handle');
@@ -4498,7 +4656,166 @@
       } else {
         fieldConfigContainer.insertBefore(draggedRow, row);
       }
+      renderPreview();
+      pushHistory('reorder');
     });
+  }
+
+  function deleteFieldRow(row) {
+    if (!row) return;
+    var removedId = row.getAttribute('data-id');
+    row.remove();
+    if (selectedFieldId === removedId) {
+      selectedFieldId = null;
+      if (propertiesForm) propertiesForm.style.display = 'none';
+      restorePropertiesForm();
+    }
+    updateRequiredHiddenWarnings();
+    renderPreview();
+    pushHistory('delete');
+  }
+
+  function scheduleHistorySnapshot() {
+    if (isRestoringHistory) return;
+    if (historyDebounceTimer) clearTimeout(historyDebounceTimer);
+    historyDebounceTimer = setTimeout(function(){ pushHistory('auto'); }, 220);
+  }
+
+  function getStateSnapshot() {
+    return {
+      config: getConfigFromUI(),
+      selectedId: selectedFieldId,
+      currentStep: currentStep,
+      layout: getSelectedLayout(),
+      density: densitySelect ? densitySelect.value : 'density-standard',
+      numSteps: numStepsSelect ? numStepsSelect.value : (currentStep || 1),
+      design: {
+        column: designColumnSelect ? designColumnSelect.value : '',
+        background: designBackgroundSelect ? designBackgroundSelect.value : '',
+        theme: designThemeSelect ? designThemeSelect.value : '',
+        container: designContainerStyleSelect ? designContainerStyleSelect.value : '',
+        emphasis: designEmphasisSelect ? designEmphasisSelect.value : '',
+        motion: designMotionSelect ? designMotionSelect.value : '',
+        buttonStyle: designButtonStyleSelect ? designButtonStyleSelect.value : '',
+        buttonShape: designButtonShapeSelect ? designButtonShapeSelect.value : '',
+        buttonWidth: designButtonWidthSelect ? designButtonWidthSelect.value : '',
+        inputStyle: designInputStyleSelect ? designInputStyleSelect.value : '',
+        inputRadius: designInputRadiusSelect ? designInputRadiusSelect.value : '',
+        typeScale: designTypeScaleSelect ? designTypeScaleSelect.value : '',
+        headingWeight: designHeadingWeightSelect ? designHeadingWeightSelect.value : ''
+      },
+      display: typeof getFormDisplayState === 'function' ? getFormDisplayState() : {},
+      meta: Object.assign({}, formMetaState),
+      hiddenMeta: Array.isArray(hiddenMetadataState) ? JSON.parse(JSON.stringify(hiddenMetadataState)) : [],
+      capture: {
+        utms: hiddenCaptureState ? hiddenCaptureState.utms : true,
+        referrer: hiddenCaptureState ? hiddenCaptureState.referrer : true
+      }
+    };
+  }
+
+  function applySnapshot(snapshot) {
+    if (!snapshot || !Array.isArray(snapshot.config)) return;
+    isRestoringHistory = true;
+    fieldConfigContainer.innerHTML = '';
+    snapshot.config.forEach(function(cfg){ buildFieldRow(cfg); });
+    selectedFieldId = null;
+
+    if (layoutSelect && snapshot.layout) {
+      layoutSelect.value = snapshot.layout;
+      updateStepVisibility();
+    }
+    if (densitySelect && snapshot.density) densitySelect.value = snapshot.density;
+    if (numStepsSelect && snapshot.numSteps) numStepsSelect.value = snapshot.numSteps;
+    currentStep = snapshot.currentStep || 1;
+
+    if (snapshot.design) {
+      if (designColumnSelect && snapshot.design.column) designColumnSelect.value = snapshot.design.column;
+      if (designBackgroundSelect && snapshot.design.background) designBackgroundSelect.value = snapshot.design.background;
+      if (designThemeSelect && snapshot.design.theme) designThemeSelect.value = snapshot.design.theme;
+      if (designContainerStyleSelect && snapshot.design.container) designContainerStyleSelect.value = snapshot.design.container;
+      if (designEmphasisSelect && snapshot.design.emphasis) designEmphasisSelect.value = snapshot.design.emphasis;
+      if (designMotionSelect && snapshot.design.motion) designMotionSelect.value = snapshot.design.motion;
+      if (designButtonStyleSelect && snapshot.design.buttonStyle) designButtonStyleSelect.value = snapshot.design.buttonStyle;
+      if (designButtonShapeSelect && snapshot.design.buttonShape) designButtonShapeSelect.value = snapshot.design.buttonShape;
+      if (designButtonWidthSelect && snapshot.design.buttonWidth) designButtonWidthSelect.value = snapshot.design.buttonWidth;
+      if (designInputStyleSelect && snapshot.design.inputStyle) designInputStyleSelect.value = snapshot.design.inputStyle;
+      if (designInputRadiusSelect && snapshot.design.inputRadius) designInputRadiusSelect.value = snapshot.design.inputRadius;
+      if (designTypeScaleSelect && snapshot.design.typeScale) designTypeScaleSelect.value = snapshot.design.typeScale;
+      if (designHeadingWeightSelect && snapshot.design.headingWeight) designHeadingWeightSelect.value = snapshot.design.headingWeight;
+      applyDesignSelections();
+    }
+
+    if (snapshot.display && typeof setFormDisplayState === 'function') {
+      setFormDisplayState(snapshot.display);
+    }
+
+    if (snapshot.meta) {
+      formMetaState = Object.assign({}, snapshot.meta);
+      FORM_META_KEYS.forEach(function(key){ renderMetaField(key); });
+    }
+
+    if (Array.isArray(snapshot.hiddenMeta)) {
+      hiddenMetadataState = JSON.parse(JSON.stringify(snapshot.hiddenMeta));
+      renderCustomHiddenMetadataGroups();
+    }
+
+    if (snapshot.capture && hiddenCaptureState) {
+      hiddenCaptureState.utms = !!snapshot.capture.utms;
+      hiddenCaptureState.referrer = !!snapshot.capture.referrer;
+      syncHiddenMetadataUiFromState();
+    }
+
+    if (snapshot.selectedId) selectFieldForProperties(snapshot.selectedId);
+    renderPreview();
+    isRestoringHistory = false;
+    lastHistorySignature = JSON.stringify(snapshot);
+    updateUndoRedoButtons();
+  }
+
+  function updateUndoRedoButtons() {
+    var undoBtn = document.getElementById('renderer-undo');
+    var redoBtn = document.getElementById('renderer-redo');
+    if (undoBtn) undoBtn.disabled = historyStack.length <= 1;
+    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+  }
+
+  function pushHistory(label) {
+    try {
+      var snap = getStateSnapshot();
+      var sig = JSON.stringify(snap);
+      if (sig === lastHistorySignature) {
+        updateUndoRedoButtons();
+        return;
+      }
+      historyStack.push(snap);
+      lastHistorySignature = sig;
+      if (historyStack.length > HISTORY_LIMIT) historyStack.shift();
+      redoStack = [];
+      updateUndoRedoButtons();
+    } catch (e) {
+      // if history fails, do not block the UI
+    }
+  }
+
+  function undo() {
+    if (historyStack.length <= 1) return;
+    var current = getStateSnapshot();
+    redoStack.push(current);
+    var previous = historyStack[historyStack.length - 2];
+    historyStack.pop();
+    applySnapshot(previous);
+    lastHistorySignature = JSON.stringify(previous);
+    updateUndoRedoButtons();
+  }
+
+  function redo() {
+    if (!redoStack.length) return;
+    var next = redoStack.pop();
+    historyStack.push(next);
+    applySnapshot(next);
+    lastHistorySignature = JSON.stringify(next);
+    updateUndoRedoButtons();
   }
 
   function buildOptionsUI(row, cfg, isStandard) {
@@ -4565,10 +4882,10 @@
     if (cfg.type === 'text') {
       // show a short preview of the text block
       var textPreview = stripHtml(cfg.text || '').replace(/\s+/g, ' ').slice(0, 120);
-      row.innerHTML = '\n      <div class="field-row-main">\n        <div class="field-row-main-left">\n          <span class="field-row-handle">⋮⋮</span>\n          <span class="field-row-label">' + ((textPreview || 'Text block').replace(/"/g,'&quot;')) + '</span>\n        </div>\n        <div class="field-row-meta">\n          <span class="kind-label">Text block</span>\n        </div>\n      </div>';
+      row.innerHTML = '\n      <div class="field-row-main">\n        <div class="field-row-main-left">\n          <span class="field-row-handle">⋮⋮</span>\n          <span class="field-row-label">' + ((textPreview || 'Text block').replace(/"/g,'&quot;')) + '</span>\n        </div>\n        <div class="field-row-meta">\n          <span class="kind-label">Text block</span>\n          <button type="button" class="field-row-delete" aria-label="Delete block">✕</button>\n        </div>\n      </div>';
     } else {
       var labelText = ((cfg.label || '') ? cfg.label.replace(/"/g,'&quot;') : 'Untitled');
-      row.innerHTML = '\n      <div class="field-row-main">\n        <div class="field-row-main-left">\n          <span class="field-row-handle">⋮⋮</span>\n          <span class="field-row-label">' + labelText + '</span>\n        </div>\n        <div class="field-row-meta">\n          <span class="field-condition-indicator" aria-label="Conditional field">Conditional</span>\n          <span class="kind-label">' + (isStandard ? 'Standard field' : 'Custom field') + '</span>\n        </div>\n      </div>\n      <div class="field-required-hidden-warning" role="note" aria-live="polite">\n        <span class="field-required-hidden-icon" aria-hidden="true">⚠</span>\n        <span class="field-required-hidden-text">This field is required but hidden under current conditions.</span>\n      </div>';
+      row.innerHTML = '\n      <div class="field-row-main">\n        <div class="field-row-main-left">\n          <span class="field-row-handle">⋮⋮</span>\n          <span class="field-row-label">' + labelText + '</span>\n        </div>\n        <div class="field-row-meta">\n          <span class="field-condition-indicator" aria-label="Conditional field">Conditional field</span>\n          <span class="kind-label">' + (isStandard ? 'Standard field' : 'Custom field') + '</span>\n          <button type="button" class="field-row-delete" aria-label="Delete field">✕</button>\n        </div>\n      </div>\n      <div class="field-required-hidden-warning" role="note" aria-live="polite">\n        <span class="field-required-hidden-icon" aria-hidden="true">⚠</span>\n        <span class="field-required-hidden-text">This field is required but hidden under current conditions.</span>\n      </div>';
     }
 
     // attach the config object to the row so properties panel and preview can read it
@@ -4576,6 +4893,7 @@
 
     // selection handler: click to select and open properties
     row.addEventListener('click', function(e){
+      if (e.target && e.target.classList && e.target.classList.contains('field-row-delete')) return;
       e.stopPropagation();
       // toggle: if this is already selected, collapse/clear selection
       if (selectedFieldId === row._cfg.id) {
@@ -4603,21 +4921,21 @@
     if (!row || row.getAttribute('data-type') !== 'field') return;
     var indicator = row.querySelector('.field-condition-indicator');
     if (!indicator) return;
-    var hasConditions = hasActiveConditions(row._cfg);
-    indicator.classList.toggle('active', !!hasConditions);
+    var enabled = isConditionalEnabled(row._cfg);
+    indicator.classList.toggle('active', !!enabled);
   }
 
   function isFieldRequiredButHiddenUnderCurrentConditions(fieldConfig) {
     if (!fieldConfig || fieldConfig.type !== 'field') return false;
-    if (!fieldConfig.show) return false;
     if (!fieldConfig.required) return false;
+    if (fieldConfig.show === false) return true;
     if (!hasActiveConditions(fieldConfig)) return false;
     var key = fieldConfig.html || fieldConfig.id;
     if (!key) return false;
     // Only evaluate if the field exists in the current preview (e.g., current wizard step).
     var entry = getPreviewFieldEntry(key);
     if (!entry) return false;
-    return !evaluateFieldConditions(fieldConfig);
+    return !shouldFieldBeVisibleUnderConditions(fieldConfig);
   }
 
   function updateRequiredHiddenWarningForRow(row) {
@@ -4672,6 +4990,8 @@
     };
     buildFieldRow(field);
     selectFieldForProperties(id);
+    renderPreview();
+    pushHistory('add-field');
   }
 
   function addTextBlock() {
@@ -4688,6 +5008,8 @@
     };
     buildFieldRow(cfg);
     selectFieldForProperties(id);
+    renderPreview();
+    pushHistory('add-text');
   }
 
   function getConfigFromUI() {
@@ -4718,6 +5040,11 @@
   }
 
   function renderPreview() {
+    // Builder preview: show conditional indicators and placeholders.
+    previewConditionUiShowIndicator = true;
+    previewConditionUiShowPlaceholder = true;
+    previewConditionHideMode = 'placeholder';
+
     var cfg = getConfigFromUI();
     var density = densitySelect ? densitySelect.value : 'density-standard';
     var layout = getSelectedLayout();
@@ -4788,6 +5115,7 @@
     syncWizardButtons('preview', layout, currentStep, maxSteps, displayState, null);
     initializePreviewConditionEngine(cfg);
     updateRequiredHiddenWarnings();
+    syncRendererValidationBanner(cfg);
   }
 
   function applyPreviewSpacing(element, density, layout) {
@@ -4801,19 +5129,61 @@
     else element.style.marginBottom = '14px';
   }
 
+  function hasConfiguredConditions(field) {
+    return !!(field && field.type === 'field' && Array.isArray(field.conditions) && field.conditions.length);
+  }
+
+  function isConditionalEnabled(field) {
+    if (!field || field.type !== 'field') return false;
+    // If explicitly toggled, respect that.
+    if (typeof field.conditionsEnabled === 'boolean') return field.conditionsEnabled;
+    // Back-compat: if conditions exist but no explicit toggle, treat as enabled.
+    return hasConfiguredConditions(field);
+  }
+
   function hasActiveConditions(field) {
-    return !!(field && field.type === 'field' && field.conditionsEnabled && Array.isArray(field.conditions) && field.conditions.length);
+    return isConditionalEnabled(field) && hasConfiguredConditions(field);
+  }
+
+  function normalizeConditionAction(field) {
+    var raw = (field && field.conditionAction ? String(field.conditionAction) : 'show').toLowerCase();
+    return (raw === 'hide') ? 'hide' : 'show';
+  }
+
+  function shouldFieldBeVisibleUnderConditions(fieldConfig) {
+    if (!hasActiveConditions(fieldConfig)) return true;
+    var met = evaluateFieldConditions(fieldConfig);
+    return normalizeConditionAction(fieldConfig) === 'hide' ? !met : !!met;
   }
 
   function handleRenderedPreviewField(item, element) {
     if (!element || item.type !== 'field') return;
     var placeholder = null;
-    if (hasActiveConditions(item)) {
-      placeholder = ensureConditionalPlaceholder(element, item);
+    if (isConditionalEnabled(item)) {
+      if (previewConditionUiShowIndicator) ensurePreviewConditionalIndicator(element);
       element.classList.add('conditional-field');
+    }
+    if (hasActiveConditions(item) && previewConditionUiShowPlaceholder) {
+      placeholder = ensureConditionalPlaceholder(element, item);
     }
     var entry = registerPreviewField(item, element);
     if (entry && placeholder) entry.placeholder = placeholder;
+  }
+
+  function ensurePreviewConditionalIndicator(element) {
+    if (!element) return null;
+    var existing = element.querySelector('.preview-condition-indicator');
+    if (existing) return existing;
+    var target = element.querySelector('.preview-radio-legend') ||
+                 element.querySelector('.preview-checkbox-text') ||
+                 element.querySelector('.preview-field-inner > label');
+    if (!target) return null;
+    var badge = document.createElement('span');
+    badge.className = 'preview-condition-indicator';
+    badge.textContent = 'Conditional field';
+    target.appendChild(document.createTextNode(' '));
+    target.appendChild(badge);
+    return badge;
   }
 
   function registerPreviewField(fieldConfig, element) {
@@ -4842,19 +5212,20 @@
     var message = document.createElement('span');
     message.className = 'conditional-message';
     var label = field.label || 'Untitled field';
-    message.textContent = label + ' is hidden until its conditions are met';
+    message.textContent = label + ' is hidden based on its conditions';
     var pill = document.createElement('span');
     pill.className = 'conditional-pill';
-    pill.textContent = 'Conditional';
+    pill.textContent = 'Conditional field';
     placeholder.appendChild(message);
     placeholder.appendChild(pill);
     element.appendChild(placeholder);
     return placeholder;
   }
 
-  function initializePreviewConditionEngine(config) {
+  function initializePreviewConditionEngine(config, options) {
     if (!previewFieldRegistry) previewFieldRegistry = {};
     previewDependencyMap = {};
+    previewConditionEngineUpdateWarnings = !(options && options.updateRequiredHiddenWarnings === false);
     var conditionalFields = [];
 
     config.forEach(function(field){
@@ -4879,7 +5250,7 @@
         dependents.forEach(function(targetField){
           updateConditionalFieldVisibility(targetField);
         });
-        updateRequiredHiddenWarnings();
+        if (previewConditionEngineUpdateWarnings) updateRequiredHiddenWarnings();
       });
     });
 
@@ -4887,7 +5258,7 @@
       updateConditionalFieldVisibility(field);
     });
 
-    updateRequiredHiddenWarnings();
+    if (previewConditionEngineUpdateWarnings) updateRequiredHiddenWarnings();
   }
 
   function attachPreviewControlListeners(entry, handler) {
@@ -4965,8 +5336,18 @@
     if (!key) return;
     var entry = getPreviewFieldEntry(key);
     if (!entry || !entry.element) return;
-    var shouldShow = evaluateFieldConditions(fieldConfig);
+    var shouldShow = shouldFieldBeVisibleUnderConditions(fieldConfig);
     entry.element.classList.toggle('conditional-hidden', !shouldShow);
+
+    if (previewConditionHideMode === 'collapse') {
+      entry.element.style.display = shouldShow ? '' : 'none';
+    } else {
+      // Ensure any prior collapse-mode render doesn't leak into builder preview.
+      entry.element.style.display = '';
+    }
+
+    // Record a snapshot after the preview reflects the current state.
+    scheduleHistorySnapshot();
   }
 
   function appendPreviewItem(f, container, density, layoutMode) {
@@ -5665,6 +6046,7 @@
       updateConditionFieldAvailability();
       updateConditionButtonState();
       clearConditionValidationError();
+      try { syncSelectedFieldConditionsFromEditor(); } catch (err) {}
     });
     content.appendChild(fldSel);
     content.appendChild(opSel);
@@ -5672,6 +6054,67 @@
     content.appendChild(del);
     wrap.appendChild(content);
     return wrap;
+  }
+
+  function collectConditionsFromEditor() {
+    if (!propConditionsList) return [];
+    var proposed = [];
+    var rows = propConditionsList.querySelectorAll('.condition-row');
+    rows.forEach(function(row, index){
+      var fieldSel = row.querySelector('.condition-field');
+      var operatorSel = row.querySelector('.condition-operator');
+      var valueInput = row.querySelector('.condition-value');
+      var connectorSel = row.querySelector('.condition-connector-select');
+      if (!fieldSel || !fieldSel.value) return;
+      var operator = operatorSel ? operatorSel.value : 'is';
+      var value = operator === 'is blank' ? '' : (valueInput ? (valueInput.value || '').trim() : '');
+      var connector = connectorSel ? connectorSel.value : (index === 0 ? 'and' : 'and');
+      proposed.push({ field: fieldSel.value, operator: operator, value: value, connector: connector });
+    });
+    return proposed;
+  }
+
+  var conditionLiveSyncTimer = null;
+  function syncSelectedFieldConditionsFromEditor(options) {
+    var shouldRender = !(options && options.render === false);
+    if (!selectedFieldId || !fieldConfigContainer) return;
+    var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+    if (!row || !row._cfg || row._cfg.type !== 'field') return;
+
+    var cfg = row._cfg;
+    var toggleOn = isConditionToggleOn();
+    cfg.conditionsEnabled = !!toggleOn;
+    cfg.conditionAction = propConditionAction ? (propConditionAction.value || cfg.conditionAction || 'show') : (cfg.conditionAction || 'show');
+
+    if (toggleOn) {
+      var proposed = collectConditionsFromEditor();
+      var shadowCfg = Object.assign({}, cfg);
+      shadowCfg.conditions = proposed.slice();
+      shadowCfg.conditionsEnabled = true;
+      var allConfigs = snapshotConfigsWithOverride(cfg.id, shadowCfg);
+      var err = validateConditionsForField(shadowCfg, proposed, allConfigs);
+      if (err) {
+        setConditionValidationError(err);
+        return;
+      }
+      clearConditionValidationError();
+      cfg.conditions = proposed;
+    } else {
+      clearConditionValidationError();
+      cfg.conditions = [];
+    }
+
+    row._cfg = Object.assign({}, cfg);
+    updateFieldConditionIndicator(row);
+    updateRequiredHiddenWarningForRow(row);
+
+    if (shouldRender) {
+      if (conditionLiveSyncTimer) clearTimeout(conditionLiveSyncTimer);
+      conditionLiveSyncTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+        scheduleHistorySnapshot();
+      }, 80);
+    }
   }
 
   function ensureHtmlOption(value) {
@@ -5927,6 +6370,17 @@
     updateFieldConditionIndicator(row);
     updateRequiredHiddenWarningForRow(row);
 
+    // keep the field list label in sync with the edited text
+    var rowLabel = row.querySelector('.field-row-label');
+    if (rowLabel) {
+      if (cfg.type === 'text') {
+        var previewText = stripHtml(cfg.text || '').replace(/\s+/g, ' ').trim();
+        rowLabel.textContent = (previewText || 'Text block').slice(0, 120);
+      } else {
+        rowLabel.textContent = (cfg.label || '').trim() || 'Untitled';
+      }
+    }
+
     // update inline label and html display in the row
     var labInput = row.querySelector('.label-input'); if (labInput) labInput.value = cfg.label;
     var htmlIn = row.querySelector('.html-name-input'); var htmlSel = row.querySelector('.html-name-select');
@@ -5934,7 +6388,76 @@
 
     updateHtmlSelectOptions(selectedFieldId);
     renderPreview();
+    pushHistory('edit');
+    scheduleHistorySnapshot();
   });
+
+  // Live-update the selected field row label as the author types.
+  if (propLabel) {
+    var propLabelPreviewTimer = null;
+    propLabel.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      var rowLabel = row.querySelector('.field-row-label');
+      if (!rowLabel) return;
+      var next = (propLabel.value || '').trim();
+      rowLabel.textContent = next || 'Untitled';
+
+      // Keep the underlying config in sync so the preview/form updates too.
+      row._cfg.label = next;
+
+      // Debounce preview rendering while typing.
+      if (propLabelPreviewTimer) clearTimeout(propLabelPreviewTimer);
+      propLabelPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update the conditional action (Show/Hide) without requiring Apply.
+  if (propConditionAction) {
+    propConditionAction.addEventListener('change', function(){
+      try { syncSelectedFieldConditionsFromEditor(); } catch (e) {}
+    });
+  }
+
+  // Live-update required/hidden without requiring Apply.
+  if (propHidden) {
+    propHidden.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      // propHidden checked means field is hidden.
+      row._cfg.show = !propHidden.checked;
+      row._cfg = Object.assign({}, row._cfg);
+      updateRequiredHiddenWarningForRow(row);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+  if (propRequired) {
+    propRequired.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      row._cfg.required = !!propRequired.checked;
+      row._cfg = Object.assign({}, row._cfg);
+      updateRequiredHiddenWarningForRow(row);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update conditions as the author edits them.
+  if (propConditionsList) {
+    propConditionsList.addEventListener('change', function(){
+      try { syncSelectedFieldConditionsFromEditor(); } catch (e) {}
+    });
+    propConditionsList.addEventListener('input', function(e){
+      if (!e || !e.target || !e.target.classList) return;
+      if (!(e.target.classList.contains('condition-value') || e.target.classList.contains('condition-operator'))) return;
+      try { syncSelectedFieldConditionsFromEditor(); } catch (err) {}
+    });
+  }
 
   // Add condition action: create an empty row populated with current available fields
   propAddCondition.addEventListener('click', function(e){
@@ -5949,6 +6472,7 @@
     refreshConditionConnectors();
     updateConditionFieldAvailability();
     clearConditionValidationError();
+    try { syncSelectedFieldConditionsFromEditor(); } catch (err) {}
   });
 
   if (propAddOption) {
@@ -5987,6 +6511,14 @@
     propConditionToggle.addEventListener('click', function(){
       if (propConditionToggle.disabled) return;
       setConditionToggleState(!isConditionToggleOn());
+
+      // Immediately reflect conditional status in the field list + preview.
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      row._cfg.conditionsEnabled = isConditionToggleOn();
+      updateFieldConditionIndicator(row);
+      try { syncSelectedFieldConditionsFromEditor(); } catch (err) { renderPreview(); }
     });
   }
 
@@ -6027,6 +6559,7 @@
       syncHiddenMetadataUiFromState();
       renderPreview();
       if (publishedState) refreshPublishTargets();
+      scheduleHistorySnapshot();
     });
   }
   if (captureReferrerToggle) {
@@ -6035,6 +6568,7 @@
       syncHiddenMetadataUiFromState();
       renderPreview();
       if (publishedState) refreshPublishTargets();
+      scheduleHistorySnapshot();
     });
   }
 
@@ -6046,6 +6580,7 @@
   if (customMetaAddBtn) {
     customMetaAddBtn.addEventListener('click', function(){
       addCustomHiddenMetadataFromInputs();
+      scheduleHistorySnapshot();
     });
   }
   if (customMetaKey) {
@@ -6053,6 +6588,7 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         addCustomHiddenMetadataFromInputs();
+        scheduleHistorySnapshot();
       }
     });
   }
@@ -6061,6 +6597,7 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         addCustomHiddenMetadataFromInputs();
+        scheduleHistorySnapshot();
       }
     });
   }
@@ -6069,6 +6606,7 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         addCustomHiddenMetadataFromInputs();
+        scheduleHistorySnapshot();
       }
     });
   }
@@ -6087,6 +6625,8 @@
   }
   if (ctxBuSource) ctxBuSource.addEventListener('change', syncPageContextOverrideControls);
   if (ctxAssetSource) ctxAssetSource.addEventListener('change', syncPageContextOverrideControls);
+  if (ctxBuSource) ctxBuSource.addEventListener('change', scheduleHistorySnapshot);
+  if (ctxAssetSource) ctxAssetSource.addEventListener('change', scheduleHistorySnapshot);
   syncPageContextOverrideControls();
 
   richEditorCommands.forEach(function(cmd){
@@ -6271,6 +6811,7 @@
     renderPreview();
     renderExistingFieldList();
     closeExistingFieldModal();
+    pushHistory('add-existing');
   }
 
   function setFieldPanelCollapsed(collapsed) {
@@ -6355,6 +6896,7 @@
       formMetaState[key] = '';
       renderMetaField(key);
       if (metaInputs[key]) metaInputs[key].focus();
+      scheduleHistorySnapshot();
     });
     chip.appendChild(label);
     chip.appendChild(remove);
@@ -6380,6 +6922,7 @@
     formMetaState[key] = value;
     input.value = '';
     renderMetaField(key);
+    scheduleHistorySnapshot();
   }
 
   function getFieldTypeLabel(type) {
@@ -6567,6 +7110,26 @@
     });
   }
 
+  var undoBtn = document.getElementById('renderer-undo');
+  var redoBtn = document.getElementById('renderer-redo');
+  if (undoBtn) {
+    undoBtn.addEventListener('click', function(e){ e.preventDefault(); undo(); });
+  }
+  if (redoBtn) {
+    redoBtn.addEventListener('click', function(e){ e.preventDefault(); redo(); });
+  }
+
+  if (fieldConfigContainer) {
+    fieldConfigContainer.addEventListener('click', function(e){
+      var deleteBtn = e.target.closest('.field-row-delete');
+      if (deleteBtn) {
+        e.preventDefault();
+        var row = deleteBtn.closest('.field-row');
+        deleteFieldRow(row);
+      }
+    });
+  }
+
   if (existingFieldModalClose) {
     existingFieldModalClose.addEventListener('click', function(e){
       e.preventDefault();
@@ -6714,6 +7277,7 @@
     var eventType = input.tagName === 'SELECT' ? 'change' : 'input';
     input.addEventListener(eventType, function(){
       renderPreview();
+      scheduleHistorySnapshot();
     });
   });
 
@@ -6722,6 +7286,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designBackgroundSelect) {
@@ -6729,6 +7294,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
 
@@ -6737,6 +7303,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designContainerStyleSelect) {
@@ -6744,6 +7311,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designEmphasisSelect) {
@@ -6751,6 +7319,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designButtonStyleSelect) {
@@ -6758,6 +7327,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designButtonShapeSelect) {
@@ -6765,6 +7335,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designButtonWidthSelect) {
@@ -6772,18 +7343,21 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designInputStyleSelect) {
     designInputStyleSelect.addEventListener('change', function(){
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designInputRadiusSelect) {
     designInputRadiusSelect.addEventListener('change', function(){
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designTypeScaleSelect) {
@@ -6791,6 +7365,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designHeadingWeightSelect) {
@@ -6798,6 +7373,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
   if (designMotionSelect) {
@@ -6805,6 +7381,7 @@
       applyDesignSelections();
       renderPreview();
       if (publishedState) { syncPublishedDesignStateFromControls(); refreshPublishTargets(); }
+      scheduleHistorySnapshot();
     });
   }
 
@@ -6816,30 +7393,33 @@
   wireDesignPanelToggle(designTypographyToggle, designTypographyBody);
   wireDesignPanelToggle(designMotionToggle, designMotionBody);
 
-  refreshBtn.addEventListener('click', renderPreview);
-  addFieldBtn.addEventListener('click', function(e){ e.preventDefault(); addCustomField(); });
-  addTextBtn.addEventListener('click', function(e){ e.preventDefault(); addTextBlock(); });
+  refreshBtn.addEventListener('click', function(){ renderPreview(); scheduleHistorySnapshot(); });
+  addFieldBtn.addEventListener('click', function(e){ e.preventDefault(); addCustomField(); scheduleHistorySnapshot(); });
+  addTextBtn.addEventListener('click', function(e){ e.preventDefault(); addTextBlock(); scheduleHistorySnapshot(); });
   templateSelect.addEventListener('change', function () {
     loadTemplate(templateSelect.value);
     applyTemplateMetaDefaults(templateSelect.value);
     updateStepVisibility();
     currentStep = 1;
     renderPreview();
+    pushHistory('template-change');
   });
   if (densitySelect) {
-    densitySelect.addEventListener('change', renderPreview);
+    densitySelect.addEventListener('change', function(){ renderPreview(); scheduleHistorySnapshot(); });
   }
   if (layoutSelect) {
     layoutSelect.addEventListener('change', function(){
       if (getSelectedLayout() !== 'wizard') currentStep = 1;
       updateStepVisibility();
       renderPreview();
+      scheduleHistorySnapshot();
     });
   }
   numStepsSelect.addEventListener('change', function(){
     var maxSteps = parseInt(numStepsSelect.value, 10) || 3;
     if (currentStep > maxSteps) currentStep = maxSteps;
     renderPreview();
+    scheduleHistorySnapshot();
   });
 
   if (formDisplayPanelToggle) {
@@ -6859,10 +7439,10 @@
   }
 
   if (wizardValidateSelect) {
-    wizardValidateSelect.addEventListener('change', renderPreview);
+    wizardValidateSelect.addEventListener('change', function(){ renderPreview(); scheduleHistorySnapshot(); });
   }
   if (wizardNavigationSelect) {
-    wizardNavigationSelect.addEventListener('change', renderPreview);
+    wizardNavigationSelect.addEventListener('change', function(){ renderPreview(); scheduleHistorySnapshot(); });
   }
 
   if (livePreviewToggle) {
@@ -7023,12 +7603,16 @@
             scrollTarget = siteFormPanel;
           }
 
-          try { scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-          catch (e) { try { scrollTarget.scrollIntoView(true); } catch (err) {} }
+          scrollToElementTop(scrollTarget, 'smooth');
 
           if (opts && opts.expand && typeof this.expand === 'function') this.expand();
           if (opts && opts.focus && typeof this.focusFirstField === 'function') {
-            setTimeout(this.focusFirstField.bind(this), 240);
+            var self = this;
+            setTimeout(function(){
+              try { self.focusFirstField(); } catch (e) {}
+              // Some browsers scroll on focus; re-anchor the viewport to the component top.
+              scrollToElementTop(scrollTarget, 'auto');
+            }, 240);
           }
         }
       },
@@ -7080,6 +7664,8 @@
   updateStepVisibility();
   applyTemplateMetaDefaults(templateSelect.value);
   renderPreview();
+  pushHistory('init');
+  updateUndoRedoButtons();
 </script>
 </body>
 </html>
