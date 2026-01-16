@@ -578,7 +578,11 @@
     .template-group { display:flex; flex-direction:column; font-size:12px; gap:4px; }
     .template-group label { font-weight:600; color:#333; }
     .template-group select { padding:4px 6px; font-size:12px; border-radius:4px; border:1px solid #ccc; width:260px; }
-    .layout-density-group { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; font-size:12px; }
+    .template-select-row { display:flex; gap:8px; align-items:center; }
+    .select-form-btn { padding:5px 16px; font-size:12px; font-weight:600; border-radius:6px; border:none; background:var(--exp-blue); color:#fff; cursor:pointer; white-space:nowrap; transition:background 150ms ease; }
+    .select-form-btn:hover { background:#2d5fa1; }
+    .select-form-btn:focus-visible { outline:2px solid #93c5fd; outline-offset:2px; }
+    .layout-density-group { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; font-size:12px; margin-left:auto; }
     .mini-group { display:flex; flex-direction:column; gap:4px; }
     .mini-group label { font-weight:600; color:#333; }
     .mini-group select { padding:3px 6px; border-radius:4px; border:1px solid #ccc; font-size:12px; }
@@ -1594,12 +1598,10 @@
         </div>
       </div>
 
-      <div class="form-meta-panel future-state-panel">
+      <div class="form-meta-panel">
         <div class="form-meta-panel-head">
           <div>
-            <span class="future-state-pill">Future state</span>
             <h4>Experience & Measurement</h4>
-            <p class="form-meta-helper future-state-helper">Will implement upon CJA and AEP integration.</p>
           </div>
           <button id="exp-measure-toggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="exp-measure-body">Collapse</button>
         </div>
@@ -1609,15 +1611,29 @@
           <div class="form-meta-field">
             <label for="exp-type">Form type <span class="required-indicator">*</span></label>
             <select id="exp-type" aria-required="true">
-              <option value="contact" selected>Contact</option>
-              <option value="resource">Resource Download (Gated Asset)</option>
+              <option value="contact-general" selected>Contact Us - General Inquiry</option>
+              <option value="contact-product">Contact Us - Product Inquiry</option>
+              <option value="resource">Resource/Asset Download</option>
               <option value="webinar">Webinar Registration</option>
               <option value="event">Event Registration</option>
-              <option value="newsletter">Newsletter Signup</option>
-              <option value="demo">Request a Demo</option>
-              <option value="chatbot">Chatbot</option>
+              <option value="other">Other</option>
+              <option value="demo">Demo/Free Trial</option>
             </select>
-            <div class="small">Usually inferred from the template you choose on the Form tab. Override only when needed.</div>
+            <div class="small">Inferred from the template you choose on the Form tab. Override only when needed.</div>
+          </div>
+
+          <div class="form-meta-field" id="asset-type-field" style="display: none;">
+            <label for="exp-asset-type">Asset Type <span class="required-indicator">*</span></label>
+            <select id="exp-asset-type" aria-required="true">
+              <option value="case-study">Case Study</option>
+              <option value="white-paper">White Paper</option>
+              <option value="webinar-asset">Webinar</option>
+              <option value="ebook">eBook</option>
+              <option value="infographic">Infographic</option>
+              <option value="research-report">Research Report</option>
+              <option value="video">Video</option>
+              <option value="podcast">Podcast</option>
+            </select>
           </div>
 
           <div class="form-meta-field">
@@ -1821,10 +1837,13 @@
       <div class="top-row">
         <div class="template-group">
           <label for="form-template">Form template</label>
-          <select id="form-template">
-            <option value="contact" selected>NA-US-BIS-Contact-Form</option>
-            <option value="download">NA-US-BIS-Download-Resource</option>
-          </select>
+          <div class="template-select-row">
+            <select id="form-template">
+              <option value="contact" selected>NA-US-BIS-Contact-Form</option>
+              <option value="download">NA-US-BIS-Download-Resource</option>
+            </select>
+            <button type="button" class="select-form-btn" id="select-form-btn">Select Form</button>
+          </div>
           <div class="helper">
             Choose the global form to render, then adjust layout, steps, and field settings for this page instance.
           </div>
@@ -2085,7 +2104,7 @@
             <label for="prop-placeholder">Placeholder</label>
             <input id="prop-placeholder" type="text" />
 
-            <label for="prop-help">Help text</label>
+            <label for="prop-help">Helper text</label>
             <textarea id="prop-help" rows="2"></textarea>
 
             <label for="prop-width">Width</label>
@@ -2368,8 +2387,62 @@
       </div>
     </div>
 
-    <div class="tab-panel" id="tab-confirmation">
-      <div class="helper">Confirmation tab retains Redirect / Modal / Download options and copy.</div>
+    <div class="tab-panel" id="tab-confirmation" style="padding:16px;">
+      <!-- CONFIRMATION TARGET -->
+      <div class="form-display-grid" style="margin-bottom:16px;">
+        <label for="confirmation-target" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+          Confirmation target *
+          <select id="confirmation-target" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            <option value="redirect">Redirect</option>
+            <option value="modal">Modal</option>
+            <option value="download">Download</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- DEFAULT PAGE (dynamic) -->
+      <div class="form-display-grid" id="default-page-group" style="margin-bottom:16px;">
+        <label for="default-input" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+          <span id="default-label">Choose default confirmation page *</span>
+          <input type="text" id="default-input" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+        </label>
+      </div>
+
+      <!-- CONDITIONAL LOGIC TOGGLE -->
+      <div style="margin-bottom:16px;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:12px; font-weight:600;">
+          <input type="checkbox" id="toggle-conditional" style="width:auto; margin:0;">
+          <span>Conditional Logic</span>
+        </label>
+      </div>
+
+      <!-- CONDITIONAL BUILDER (hidden until toggle) -->
+      <div id="conditional-builder" style="display:none; margin-top:20px;">
+        <div style="border:1px solid #e1e1e1; border-radius:6px; padding:16px; background:#fafafa; margin-bottom:16px;">
+          <h4 style="margin:0 0 12px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#555;">Conditions</h4>
+          <div id="conditions-container" style="margin-bottom:12px;"></div>
+          <button id="add-condition-btn" type="button" class="btn btn-secondary" style="font-size:12px;">+ Add Condition</button>
+        </div>
+
+        <!-- ALTERNATE CONFIRMATION -->
+        <div class="form-display-grid" style="margin-bottom:16px;">
+          <label for="alternate-confirmation-target" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+            Alternate confirmation target *
+            <select id="alternate-confirmation-target" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+              <option value="redirect">Redirect</option>
+              <option value="modal">Modal</option>
+              <option value="download">Download</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-display-grid" id="alternate-confirmation-group">
+          <label for="alternate-confirmation-url" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+            Alternate confirmation URL *
+            <input type="text" id="alternate-confirmation-url" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+          </label>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -2664,6 +2737,14 @@
     if (!t) return;
     if (t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') return;
     syncLiveValidationForControl(t);
+    
+    // Handle conditional Asset Type field display
+    if (t.id === 'exp-type') {
+      var assetTypeField = document.getElementById('asset-type-field');
+      if (assetTypeField) {
+        assetTypeField.style.display = (t.value === 'resource') ? '' : 'none';
+      }
+    }
   }, true);
 
   var siteCta = document.getElementById('site-cta');
@@ -6415,6 +6496,158 @@
     });
   }
 
+  // Live-update the helper text as the author types.
+  if (propHelp) {
+    var propHelpPreviewTimer = null;
+    propHelp.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+
+      // Keep the underlying config in sync so the preview/form updates too.
+      row._cfg.help = propHelp.value || '';
+
+      // Debounce preview rendering while typing.
+      if (propHelpPreviewTimer) clearTimeout(propHelpPreviewTimer);
+      propHelpPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update placeholder as the author types.
+  if (propPlaceholder) {
+    var propPlaceholderPreviewTimer = null;
+    propPlaceholder.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+
+      // Keep the underlying config in sync so the preview/form updates too.
+      row._cfg.placeholder = propPlaceholder.value || '';
+
+      // Debounce preview rendering while typing.
+      if (propPlaceholderPreviewTimer) clearTimeout(propPlaceholderPreviewTimer);
+      propPlaceholderPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update field type.
+  if (propType) {
+    propType.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      var isStandard = (row._cfg.id && row._cfg.id.indexOf('custom_') !== 0);
+      if (!isStandard) {
+        row._cfg.fieldType = propType.value || row._cfg.fieldType;
+        row._cfg = Object.assign({}, row._cfg);
+        try { renderPreview(); } catch (e) {}
+      }
+    });
+  }
+
+  // Live-update width.
+  if (propWidth) {
+    propWidth.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      row._cfg.width = propWidth.value || 'full';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update HTML name.
+  if (propHtml) {
+    var propHtmlPreviewTimer = null;
+    propHtml.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      var isStandard = (row._cfg.id && row._cfg.id.indexOf('custom_') !== 0);
+      if (!isStandard) {
+        row._cfg.html = propHtml.value || '';
+        row._cfg = Object.assign({}, row._cfg);
+        // Debounce preview rendering while typing.
+        if (propHtmlPreviewTimer) clearTimeout(propHtmlPreviewTimer);
+        propHtmlPreviewTimer = setTimeout(function(){
+          try { renderPreview(); } catch (e) {}
+        }, 120);
+      }
+    });
+  }
+
+  // Live-update step (for wizard layout).
+  if (propStep) {
+    propStep.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg) return;
+      if (getSelectedLayout() === 'wizard') {
+        row._cfg.step = parseInt(propStep.value, 10) || 1;
+        row._cfg = Object.assign({}, row._cfg);
+        try { renderPreview(); } catch (e) {}
+      }
+    });
+  }
+
+  // Live-update font size (for text blocks).
+  if (propFontSize) {
+    propFontSize.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.fontSize = propFontSize.value || 'body';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update alignment (for text blocks).
+  if (propAlign) {
+    propAlign.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.align = propAlign.value || 'left';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update URL (for text blocks with links).
+  if (propUrl) {
+    var propUrlPreviewTimer = null;
+    propUrl.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.url = propUrl.value || '';
+      row._cfg = Object.assign({}, row._cfg);
+      // Debounce preview rendering while typing.
+      if (propUrlPreviewTimer) clearTimeout(propUrlPreviewTimer);
+      propUrlPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update link target (for text blocks with links).
+  if (propLinkTarget) {
+    propLinkTarget.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.target = propLinkTarget.value || '_blank';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
   // Live-update the conditional action (Show/Hide) without requiring Apply.
   if (propConditionAction) {
     propConditionAction.addEventListener('change', function(){
@@ -6482,6 +6715,17 @@
       if (!propOptionsList) return;
       propOptionsList.appendChild(createOptionInputRow(''));
       if (propOptionsWrapper) propOptionsWrapper.style.display = '';
+      
+      // Update the config and preview after adding a new option
+      if (selectedFieldId && fieldConfigContainer) {
+        var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+        if (row && row._cfg && row._cfg.type === 'field') {
+          var optionValues = collectOptionValues();
+          row._cfg.options = optionValues;
+          row._cfg = Object.assign({}, row._cfg);
+          try { renderPreview(); } catch (e) {}
+        }
+      }
     });
   }
 
@@ -6491,6 +6735,38 @@
         e.preventDefault();
         var row = e.target.closest('.option-row');
         if (row) row.remove();
+        
+        // Update the config and preview after deleting an option
+        if (selectedFieldId && fieldConfigContainer) {
+          var fieldRow = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+          if (fieldRow && fieldRow._cfg && fieldRow._cfg.type === 'field') {
+            var optionValues = collectOptionValues();
+            fieldRow._cfg.options = optionValues;
+            fieldRow._cfg = Object.assign({}, fieldRow._cfg);
+            try { renderPreview(); } catch (e) {}
+          }
+        }
+      }
+    });
+    
+    // Live-update options as they are edited
+    var optionInputTimer = null;
+    propOptionsList.addEventListener('input', function(e){
+      if (e.target && e.target.classList.contains('option-input')) {
+        if (!selectedFieldId || !fieldConfigContainer) return;
+        var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+        if (!row || !row._cfg || row._cfg.type !== 'field') return;
+        
+        // Update the config with current option values
+        var optionValues = collectOptionValues();
+        row._cfg.options = optionValues;
+        row._cfg = Object.assign({}, row._cfg);
+        
+        // Debounce preview rendering while typing
+        if (optionInputTimer) clearTimeout(optionInputTimer);
+        optionInputTimer = setTimeout(function(){
+          try { renderPreview(); } catch (err) {}
+        }, 120);
       }
     });
   }
@@ -6869,6 +7145,56 @@
       if (metaInputs[key]) metaInputs[key].value = '';
       renderMetaField(key);
     });
+  }
+
+  function clearAllProperties() {
+    // Clear form meta state
+    FORM_META_KEYS.forEach(function(key){
+      formMetaState[key] = '';
+      if (metaInputs[key]) metaInputs[key].value = '';
+      renderMetaField(key);
+    });
+    
+    // Reset Experience & Measurement fields to defaults
+    var expType = document.getElementById('exp-type');
+    var expAssetType = document.getElementById('exp-asset-type');
+    var expFunnel = document.getElementById('exp-funnel');
+    var expProduct = document.getElementById('exp-product');
+    var expCapture = document.getElementById('exp-capture');
+    var expCampaign = document.getElementById('exp-campaign');
+    var expRouting = document.getElementById('exp-routing');
+    var assetTypeField = document.getElementById('asset-type-field');
+    
+    if (expType) expType.value = 'contact-general';
+    if (expAssetType) expAssetType.value = 'case-study';
+    if (assetTypeField) assetTypeField.style.display = 'none';
+    if (expFunnel) expFunnel.value = 'mofu';
+    if (expProduct) expProduct.value = 'auto';
+    if (expCapture) expCapture.value = 'inline';
+    if (expCampaign) expCampaign.value = '';
+    if (expRouting) expRouting.value = 'aep_auto';
+    
+    // Reset Page context fields
+    var ctxBuSource = document.getElementById('ctx-bu-source');
+    var ctxAssetSource = document.getElementById('ctx-asset-source');
+    var ctxBuLookupKey = document.getElementById('ctx-bu-lookup-key');
+    var ctxAssetLookupKey = document.getElementById('ctx-asset-lookup-key');
+    var ctxAssetManual = document.getElementById('ctx-asset-manual');
+    
+    if (ctxBuSource) ctxBuSource.value = 'auto';
+    if (ctxAssetSource) ctxAssetSource.value = 'auto';
+    if (ctxBuLookupKey) {
+      ctxBuLookupKey.style.display = 'none';
+      ctxBuLookupKey.value = '';
+    }
+    if (ctxAssetLookupKey) {
+      ctxAssetLookupKey.style.display = 'none';
+      ctxAssetLookupKey.value = '';
+    }
+    if (ctxAssetManual) {
+      ctxAssetManual.style.display = 'none';
+      ctxAssetManual.value = '';
+    }
   }
 
   function renderMetaField(key) {
@@ -7396,13 +7722,63 @@
   refreshBtn.addEventListener('click', function(){ renderPreview(); scheduleHistorySnapshot(); });
   addFieldBtn.addEventListener('click', function(e){ e.preventDefault(); addCustomField(); scheduleHistorySnapshot(); });
   addTextBtn.addEventListener('click', function(e){ e.preventDefault(); addTextBlock(); scheduleHistorySnapshot(); });
+  
+  // Select Form button handler
+  var selectFormBtn = document.getElementById('select-form-btn');
+  if (selectFormBtn) {
+    selectFormBtn.addEventListener('click', function() {
+      var selectedTemplate = templateSelect.value;
+      loadTemplate(selectedTemplate);
+      applyTemplateMetaDefaults(selectedTemplate);
+      updateStepVisibility();
+      renderPreview();
+      pushHistory('form-selected');
+      // Update confirmation fields after form is loaded
+      if (typeof window.updateConfirmationFields === 'function') {
+        setTimeout(function() {
+          window.updateConfirmationFields();
+        }, 100);
+      }
+    });
+  }
+  
   templateSelect.addEventListener('change', function () {
-    loadTemplate(templateSelect.value);
-    applyTemplateMetaDefaults(templateSelect.value);
-    updateStepVisibility();
-    currentStep = 1;
-    renderPreview();
-    pushHistory('template-change');
+    // Template changed - clear all previous template data
+    // Clear field configuration
+    if (fieldConfigContainer) {
+      fieldConfigContainer.innerHTML = '<div class="field-config-empty" style="padding:20px; text-align:center; color:#6b7280;">Click "Select Form" to load the selected form template.</div>';
+    }
+    // Clear selected field
+    selectedFieldId = null;
+    // Hide and restore properties form
+    if (propertiesForm) {
+      propertiesForm.style.display = 'none';
+      restorePropertiesForm();
+    }
+    // Clear preview
+    if (previewContainer) {
+      previewContainer.innerHTML = '<div class="field-config-empty" style="padding:20px; text-align:center; color:#6b7280;">Preview will appear after selecting a form template.</div>';
+    }
+    // Clear all property values
+    clearAllProperties();
+    // Clear confirmation conditions
+    var conditionsContainer = document.getElementById('conditions-container');
+    if (conditionsContainer) {
+      conditionsContainer.innerHTML = '';
+    }
+    // Clear available fields for confirmation
+    if (typeof window.clearConfirmationFields === 'function') {
+      window.clearConfirmationFields();
+    }
+    // Reset confirmation toggle
+    var toggleConditional = document.getElementById('toggle-conditional');
+    if (toggleConditional) {
+      toggleConditional.checked = false;
+    }
+    var conditionalBuilder = document.getElementById('conditional-builder');
+    if (conditionalBuilder) {
+      conditionalBuilder.style.display = 'none';
+    }
   });
   if (densitySelect) {
     densitySelect.addEventListener('change', function(){ renderPreview(); scheduleHistorySnapshot(); });
@@ -7659,13 +8035,327 @@
 
   initializeFormDisplayDefaults();
   applyDesignSelections();
-  loadTemplate(templateSelect.value);
-  applyTemplateMetaDefaults(templateSelect.value);
+  // Don't load template automatically - wait for user to click "Select Form" button
+  // loadTemplate(templateSelect.value);
+  // applyTemplateMetaDefaults(templateSelect.value);
   updateStepVisibility();
-  applyTemplateMetaDefaults(templateSelect.value);
-  renderPreview();
+  // Show initial empty state
+  if (fieldConfigContainer) {
+    fieldConfigContainer.innerHTML = '<div class="field-config-empty" style="padding:20px; text-align:center; color:#6b7280;">Select a form template above and click "Select Form" to load form fields and properties.</div>';
+  }
   pushHistory('init');
   updateUndoRedoButtons();
+
+  // Confirmation Logic Builder
+  (function() {
+    console.debug('[confirmation] Initializing confirmation logic builder');
+
+    var toggle = document.getElementById('toggle-conditional');
+    var builder = document.getElementById('conditional-builder');
+    var conditionsContainer = document.getElementById('conditions-container');
+    var addConditionBtn = document.getElementById('add-condition-btn');
+    var confirmationTarget = document.getElementById('confirmation-target');
+    var alternateConfirmationTarget = document.getElementById('alternate-confirmation-target');
+    var defaultLabel = document.getElementById('default-label');
+    var defaultInput = document.getElementById('default-input');
+    var alternateConfirmationUrl = document.getElementById('alternate-confirmation-url');
+    var availableFields = [];
+    
+    // Make availableFields accessible globally for clearing
+    window.clearConfirmationFields = function() {
+      availableFields = [];
+    };
+
+    if (!toggle || !builder) return;
+
+    // Populate available fields from loaded template
+    function populateAvailableFields() {
+      availableFields = [];
+      var rows = fieldConfigContainer ? fieldConfigContainer.querySelectorAll('.field-row') : [];
+      rows.forEach(function(row) {
+        var cfg = row._cfg;
+        if (!cfg) return;
+        
+        var fieldType = cfg.fieldType;
+        var fieldId = cfg.id;
+        var label = cfg.label;
+        var options = cfg.options || [];
+        
+        // Only include dropdown, checkbox, radio, and multiselect fields
+        if ((fieldType === 'dropdown' || fieldType === 'checkbox' || fieldType === 'radio' || fieldType === 'multiselect') && label) {
+          availableFields.push({
+            id: fieldId,
+            label: label,
+            type: fieldType,
+            options: options
+          });
+        }
+      });
+      console.debug('[confirmation] Found ' + availableFields.length + ' selectable fields:', availableFields);
+    }
+
+    // Call this when form is loaded
+    window.updateConfirmationFields = populateAvailableFields;
+
+    // Set initial state based on toggle
+    builder.style.display = toggle.checked ? 'block' : 'none';
+
+    toggle.addEventListener('change', function() {
+      builder.style.display = toggle.checked ? 'block' : 'none';
+      if (toggle.checked && conditionsContainer && conditionsContainer.children.length === 0) {
+        addCondition();
+      }
+    });
+
+    // Add condition button
+    if (addConditionBtn) {
+      addConditionBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var conditionCount = conditionsContainer.querySelectorAll('.condition-row').length;
+        
+        if (conditionCount >= 5) {
+          var err = document.getElementById('condition-limit-error');
+          if (!err) {
+            err = document.createElement('div');
+            err.id = 'condition-limit-error';
+            err.textContent = 'Maximum 5 conditions allowed';
+            err.style.cssText = 'color:#c00; font-size:12px; margin-top:8px;';
+            addConditionBtn.after(err);
+            setTimeout(function() { if (err) err.remove(); }, 3000);
+          }
+          return;
+        }
+        addCondition();
+        updateRemoveButtons();
+      });
+    }
+
+    function addCondition(withOperator) {
+      if (!conditionsContainer) return;
+      
+      var conditionCount = conditionsContainer.querySelectorAll('.condition-row').length;
+      withOperator = conditionCount > 0;
+
+      var row = document.createElement('div');
+      row.className = 'condition-row';
+      row.style.cssText = 'display:grid; grid-template-columns:' + (withOperator ? 'auto ' : '') + '1fr auto 1fr auto; gap:8px; align-items:center; margin-bottom:8px; padding:8px; background:#fff; border-radius:4px; border:1px solid #e5e7eb;';
+
+      if (withOperator) {
+        var operatorSelect = document.createElement('select');
+        operatorSelect.className = 'operator-select';
+        operatorSelect.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+        operatorSelect.innerHTML = '<option value="and">AND</option><option value="or">OR</option>';
+        row.appendChild(operatorSelect);
+      }
+
+      var fieldSelect = document.createElement('select');
+      fieldSelect.className = 'field-name-select';
+      fieldSelect.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+      
+      // Populate with available fields
+      if (availableFields.length === 0) {
+        fieldSelect.innerHTML = '<option value="">Load a form first</option>';
+      } else {
+        fieldSelect.innerHTML = '<option value="">Select a field...</option>';
+        availableFields.forEach(function(field) {
+          var option = document.createElement('option');
+          option.value = field.id;
+          option.textContent = field.label + ' (' + field.type + ')';
+          fieldSelect.appendChild(option);
+        });
+      }
+      row.appendChild(fieldSelect);
+
+      var equalsLabel = document.createElement('span');
+      equalsLabel.className = 'equals-label';
+      equalsLabel.textContent = '=';
+      equalsLabel.style.cssText = 'font-weight:600; color:#374151;';
+      row.appendChild(equalsLabel);
+
+      var valueInput = document.createElement('input');
+      valueInput.type = 'text';
+      valueInput.className = 'field-value-input';
+      valueInput.placeholder = 'Value (e.g., United States)';
+      valueInput.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+      row.appendChild(valueInput);
+
+      // When field is selected, update value input to show options
+      fieldSelect.addEventListener('change', function() {
+        var selectedFieldId = fieldSelect.value;
+        
+        if (!selectedFieldId) return;
+        
+        var selectedField = availableFields.find(function(f) { return f.id === selectedFieldId; });
+        if (!selectedField || !selectedField.options || selectedField.options.length === 0) {
+          // If no options, keep as text input
+          return;
+        }
+        
+        // Replace text input with dropdown
+        var valueSelect = document.createElement('select');
+        valueSelect.className = 'field-value-select';
+        valueSelect.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+        
+        valueSelect.innerHTML = '<option value="">Select a value...</option>';
+        
+        // Get all field+value combinations already used
+        var usedCombinations = getUsedFieldValueCombinations();
+        var usedValuesForThisField = usedCombinations[selectedFieldId] || [];
+        
+        selectedField.options.forEach(function(option) {
+          var opt = document.createElement('option');
+          opt.value = option;
+          opt.textContent = option;
+          
+          // Disable if this field+value combination is already used
+          var isUsed = usedValuesForThisField.includes(option);
+          opt.disabled = isUsed;
+          if (isUsed) {
+            opt.style.color = '#9ca3af';
+          }
+          
+          valueSelect.appendChild(opt);
+        });
+        
+        // When value changes, update grey-out states for all rows
+        valueSelect.addEventListener('change', function() {
+          updateAllValueSelectStates();
+        });
+        
+        // Replace the input with the select
+        valueInput.replaceWith(valueSelect);
+        valueInput = valueSelect;
+      });
+
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = '−';
+      removeBtn.type = 'button';
+      removeBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:16px; line-height:1;';
+      removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        row.remove();
+        updateRemoveButtons();
+        updateAllValueSelectStates();
+      });
+      row.appendChild(removeBtn);
+
+      conditionsContainer.appendChild(row);
+      updateRemoveButtons();
+    }
+
+    function updateRemoveButtons() {
+      if (!conditionsContainer) return;
+      var rows = conditionsContainer.querySelectorAll('.condition-row');
+      rows.forEach(function(row, idx) {
+        var btn = row.querySelector('.remove-btn');
+        if (btn) {
+          btn.style.display = (idx === 0) ? 'none' : 'inline-block';
+        }
+      });
+    }
+
+    function getUsedFieldValueCombinations() {
+      // Returns an object like { fieldId: [value1, value2], ... }
+      var combinations = {};
+      if (!conditionsContainer) return combinations;
+      
+      var allRows = conditionsContainer.querySelectorAll('.condition-row');
+      allRows.forEach(function(row) {
+        var fieldSelect = row.querySelector('.field-name-select');
+        var valueSelect = row.querySelector('.field-value-select');
+        
+        if (fieldSelect && valueSelect && fieldSelect.value && valueSelect.value) {
+          var fieldId = fieldSelect.value;
+          var value = valueSelect.value;
+          
+          if (!combinations[fieldId]) {
+            combinations[fieldId] = [];
+          }
+          combinations[fieldId].push(value);
+        }
+      });
+      
+      return combinations;
+    }
+
+    function updateAllValueSelectStates() {
+      if (!conditionsContainer) return;
+      
+      var usedCombinations = getUsedFieldValueCombinations();
+      var allRows = conditionsContainer.querySelectorAll('.condition-row');
+      
+      allRows.forEach(function(row) {
+        var fieldSelect = row.querySelector('.field-name-select');
+        var valueSelect = row.querySelector('.field-value-select');
+        
+        if (!fieldSelect || !valueSelect || !fieldSelect.value) return;
+        
+        var currentFieldId = fieldSelect.value;
+        var currentValue = valueSelect.value;
+        var usedValuesForThisField = usedCombinations[currentFieldId] || [];
+        
+        var options = valueSelect.querySelectorAll('option');
+        options.forEach(function(option) {
+          if (!option.value) {
+            // Keep placeholder enabled
+            option.disabled = false;
+            return;
+          }
+          
+          // Disable if this value is used in another row for the same field
+          var isUsedElsewhere = usedValuesForThisField.includes(option.value) && option.value !== currentValue;
+          option.disabled = isUsedElsewhere;
+          
+          if (isUsedElsewhere) {
+            option.style.color = '#9ca3af';
+          } else {
+            option.style.color = '';
+          }
+        });
+      });
+    }
+
+    function updateInputForTarget(targetSelect, labelElement, inputElement) {
+      if (!targetSelect || !labelElement || !inputElement) return;
+      var type = targetSelect.value;
+      
+      if (type === 'redirect') {
+        labelElement.textContent = labelElement.id === 'default-label' ? 'Choose default confirmation page *' : 'Alternate confirmation URL *';
+        inputElement.placeholder = 'https://';
+        inputElement.type = 'text';
+      } else if (type === 'modal') {
+        labelElement.textContent = labelElement.id === 'default-label' ? 'Choose default modal content *' : 'Alternate modal content *';
+        inputElement.placeholder = 'Select .html file...';
+        inputElement.type = 'file';
+        inputElement.accept = '.html';
+      } else if (type === 'download') {
+        labelElement.textContent = labelElement.id === 'default-label' ? 'Choose default download file *' : 'Alternate download file *';
+        inputElement.placeholder = 'Select .zip file...';
+        inputElement.type = 'file';
+        inputElement.accept = '.zip';
+      }
+    }
+
+    // Update default confirmation target label
+    if (confirmationTarget && defaultLabel && defaultInput) {
+      confirmationTarget.addEventListener('change', function() {
+        updateInputForTarget(confirmationTarget, defaultLabel, defaultInput);
+      });
+    }
+
+    // Update alternate confirmation target label
+    if (alternateConfirmationTarget && alternateConfirmationUrl) {
+      alternateConfirmationTarget.addEventListener('change', function() {
+        var altLabel = document.querySelector('#alternate-confirmation-group label');
+        if (altLabel) {
+          updateInputForTarget(alternateConfirmationTarget, altLabel.childNodes[0], alternateConfirmationUrl);
+        }
+      });
+    }
+
+    console.debug('[confirmation] Initialization complete');
+  })();
 </script>
 </body>
 </html>
