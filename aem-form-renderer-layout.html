@@ -278,10 +278,7 @@
           --ui-primary: var(--exp-blue);
           --ui-accent: var(--exp-raspberry);
         }
-        .site-hero.theme-dark,
-        .preview-box.theme-dark,
-        .site-inline-wrap.theme-dark,
-        .published-form-wrap.theme-dark {
+        :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-dark {
           --ui-text: #ffffff;
           --ui-muted: rgba(255,255,255,0.72);
           --ui-border: rgba(255,255,255,0.18);
@@ -301,34 +298,22 @@
           --ui-primary: var(--exp-blue);
           --ui-focus: var(--exp-teal);
         }
-        .site-hero.theme-blue,
-        .preview-box.theme-blue,
-        .site-inline-wrap.theme-blue,
-        .published-form-wrap.theme-blue {
+        :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-blue {
           --ui-accent: var(--exp-blue);
           --ui-primary: var(--exp-blue);
           --ui-focus: var(--exp-blue);
         }
-        .site-hero.theme-teal,
-        .preview-box.theme-teal,
-        .site-inline-wrap.theme-teal,
-        .published-form-wrap.theme-teal {
+        :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-teal {
           --ui-accent: var(--exp-teal);
           --ui-primary: var(--exp-teal);
           --ui-focus: var(--exp-teal);
         }
-        .site-hero.theme-raspberry,
-        .preview-box.theme-raspberry,
-        .site-inline-wrap.theme-raspberry,
-        .published-form-wrap.theme-raspberry {
+        :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-raspberry {
           --ui-accent: var(--exp-raspberry);
           --ui-primary: var(--exp-raspberry);
           --ui-focus: var(--exp-raspberry);
         }
-        .site-hero.theme-purple,
-        .preview-box.theme-purple,
-        .site-inline-wrap.theme-purple,
-        .published-form-wrap.theme-purple {
+        :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-purple {
           --ui-accent: var(--exp-purple);
           --ui-primary: var(--exp-purple);
           --ui-focus: var(--exp-purple);
@@ -578,7 +563,11 @@
     .template-group { display:flex; flex-direction:column; font-size:12px; gap:4px; }
     .template-group label { font-weight:600; color:#333; }
     .template-group select { padding:4px 6px; font-size:12px; border-radius:4px; border:1px solid #ccc; width:260px; }
-    .layout-density-group { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; font-size:12px; }
+    .template-select-row { display:flex; gap:8px; align-items:center; }
+    .select-form-btn { padding:5px 16px; font-size:12px; font-weight:600; border-radius:6px; border:none; background:var(--exp-blue); color:#fff; cursor:pointer; white-space:nowrap; transition:background 150ms ease; }
+    .select-form-btn:hover { background:#2d5fa1; }
+    .select-form-btn:focus-visible { outline:2px solid #93c5fd; outline-offset:2px; }
+    .layout-density-group { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; font-size:12px; margin-left:auto; }
     .mini-group { display:flex; flex-direction:column; gap:4px; }
     .mini-group label { font-weight:600; color:#333; }
     .mini-group select { padding:3px 6px; border-radius:4px; border:1px solid #ccc; font-size:12px; }
@@ -626,48 +615,20 @@
     .design-panel-body.collapsed { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
 
     /* Design: buttons (scope to rendered forms only) */
-    .site-form-panel.btn-style-outline .btn-exp-submit,
-    .preview-box.btn-style-outline .btn-exp-submit,
-    .site-inline-wrap.btn-style-outline .btn-exp-submit,
-    .published-form-wrap.btn-style-outline .btn-exp-submit,
-    .site-form-panel .form-preview.btn-style-outline .btn-exp-submit,
-    .preview-box .form-preview.btn-style-outline .btn-exp-submit,
-    .site-inline-wrap .form-preview.btn-style-outline .btn-exp-submit,
-    .published-form-wrap .form-preview.btn-style-outline .btn-exp-submit {
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-outline, :has(.form-preview.btn-style-outline)) .btn-exp-submit {
       background:transparent !important;
       color:var(--ui-primary) !important;
       border:2px solid var(--ui-primary) !important;
       box-shadow:none !important;
       filter:none !important;
     }
-    .site-form-panel.btn-style-outline .btn-exp-submit:hover,
-    .preview-box.btn-style-outline .btn-exp-submit:hover,
-    .site-inline-wrap.btn-style-outline .btn-exp-submit:hover,
-    .published-form-wrap.btn-style-outline .btn-exp-submit:hover,
-    .site-form-panel .form-preview.btn-style-outline .btn-exp-submit:hover,
-    .preview-box .form-preview.btn-style-outline .btn-exp-submit:hover,
-    .site-inline-wrap .form-preview.btn-style-outline .btn-exp-submit:hover,
-    .published-form-wrap .form-preview.btn-style-outline .btn-exp-submit:hover {
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-outline, :has(.form-preview.btn-style-outline)) .btn-exp-submit:hover {
       background:color-mix(in srgb, var(--ui-panel-bg) 92%, var(--ui-primary) 8%) !important;
       box-shadow:none !important;
       filter:none !important;
     }
-    .site-form-panel.btn-style-outline .btn-exp-submit::after,
-    .preview-box.btn-style-outline .btn-exp-submit::after,
-    .site-inline-wrap.btn-style-outline .btn-exp-submit::after,
-    .published-form-wrap.btn-style-outline .btn-exp-submit::after,
-    .site-form-panel .form-preview.btn-style-outline .btn-exp-submit::after,
-    .preview-box .form-preview.btn-style-outline .btn-exp-submit::after,
-    .site-inline-wrap .form-preview.btn-style-outline .btn-exp-submit::after,
-    .published-form-wrap .form-preview.btn-style-outline .btn-exp-submit::after { content:none !important; }
-    .site-form-panel.btn-style-minimal .btn-exp-submit,
-    .preview-box.btn-style-minimal .btn-exp-submit,
-    .site-inline-wrap.btn-style-minimal .btn-exp-submit,
-    .published-form-wrap.btn-style-minimal .btn-exp-submit,
-    .site-form-panel .form-preview.btn-style-minimal .btn-exp-submit,
-    .preview-box .form-preview.btn-style-minimal .btn-exp-submit,
-    .site-inline-wrap .form-preview.btn-style-minimal .btn-exp-submit,
-    .published-form-wrap .form-preview.btn-style-minimal .btn-exp-submit {
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-outline, :has(.form-preview.btn-style-outline)) .btn-exp-submit::after { content:none !important; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-minimal, :has(.form-preview.btn-style-minimal)) .btn-exp-submit {
       background:transparent !important;
       color:var(--ui-primary) !important;
       border:none !important;
@@ -675,188 +636,56 @@
       filter:none !important;
       text-decoration:none;
     }
-    .site-form-panel.btn-style-minimal .btn-exp-submit:hover,
-    .preview-box.btn-style-minimal .btn-exp-submit:hover,
-    .site-inline-wrap.btn-style-minimal .btn-exp-submit:hover,
-    .published-form-wrap.btn-style-minimal .btn-exp-submit:hover,
-    .site-form-panel .form-preview.btn-style-minimal .btn-exp-submit:hover,
-    .preview-box .form-preview.btn-style-minimal .btn-exp-submit:hover,
-    .site-inline-wrap .form-preview.btn-style-minimal .btn-exp-submit:hover,
-    .published-form-wrap .form-preview.btn-style-minimal .btn-exp-submit:hover { text-decoration:underline; background:transparent !important; box-shadow:none !important; }
-    .site-form-panel.btn-style-minimal .btn-exp-submit::after,
-    .preview-box.btn-style-minimal .btn-exp-submit::after,
-    .site-inline-wrap.btn-style-minimal .btn-exp-submit::after,
-    .published-form-wrap.btn-style-minimal .btn-exp-submit::after,
-    .site-form-panel .form-preview.btn-style-minimal .btn-exp-submit::after,
-    .preview-box .form-preview.btn-style-minimal .btn-exp-submit::after,
-    .site-inline-wrap .form-preview.btn-style-minimal .btn-exp-submit::after,
-    .published-form-wrap .form-preview.btn-style-minimal .btn-exp-submit::after { content:none !important; }
-    .site-form-panel.btn-style-outline .btn-secondary,
-    .site-form-panel.btn-style-minimal .btn-secondary,
-    .preview-box.btn-style-outline .btn-secondary,
-    .preview-box.btn-style-minimal .btn-secondary,
-    .site-inline-wrap.btn-style-outline .btn-secondary,
-    .site-inline-wrap.btn-style-minimal .btn-secondary,
-    .published-form-wrap.btn-style-outline .btn-secondary,
-    .published-form-wrap.btn-style-minimal .btn-secondary,
-    .site-form-panel .form-preview.btn-style-outline .btn-secondary,
-    .site-form-panel .form-preview.btn-style-minimal .btn-secondary,
-    .preview-box .form-preview.btn-style-outline .btn-secondary,
-    .preview-box .form-preview.btn-style-minimal .btn-secondary,
-    .site-inline-wrap .form-preview.btn-style-outline .btn-secondary,
-    .site-inline-wrap .form-preview.btn-style-minimal .btn-secondary,
-    .published-form-wrap .form-preview.btn-style-outline .btn-secondary,
-    .published-form-wrap .form-preview.btn-style-minimal .btn-secondary {
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-minimal, :has(.form-preview.btn-style-minimal)) .btn-exp-submit:hover { text-decoration:underline; background:transparent !important; box-shadow:none !important; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-minimal, :has(.form-preview.btn-style-minimal)) .btn-exp-submit::after { content:none !important; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-outline, .btn-style-minimal, :has(.form-preview.btn-style-outline), :has(.form-preview.btn-style-minimal)) .btn-secondary {
       background:transparent !important;
       border:1px solid var(--ui-border) !important;
       color:var(--ui-text) !important;
     }
-    .site-form-panel.btn-style-minimal .btn-secondary,
-    .preview-box.btn-style-minimal .btn-secondary,
-    .site-inline-wrap.btn-style-minimal .btn-secondary,
-    .published-form-wrap.btn-style-minimal .btn-secondary,
-    .site-form-panel .form-preview.btn-style-minimal .btn-secondary,
-    .preview-box .form-preview.btn-style-minimal .btn-secondary,
-    .site-inline-wrap .form-preview.btn-style-minimal .btn-secondary,
-    .published-form-wrap .form-preview.btn-style-minimal .btn-secondary { border:none; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap):is(.btn-style-minimal, :has(.form-preview.btn-style-minimal)) .btn-secondary { border:none; }
 
-    .site-form-panel.btn-shape-rounded .btn,
-    .preview-box.btn-shape-rounded .btn,
-    .site-inline-wrap.btn-shape-rounded .btn,
-    .published-form-wrap.btn-shape-rounded .btn,
-    .site-form-panel .form-preview.btn-shape-rounded .btn,
-    .site-form-panel .form-preview.btn-shape-rounded .btn-exp-submit,
-    .preview-box .form-preview.btn-shape-rounded .btn,
-    .preview-box .form-preview.btn-shape-rounded .btn-exp-submit,
-    .site-inline-wrap .form-preview.btn-shape-rounded .btn,
-    .site-inline-wrap .form-preview.btn-shape-rounded .btn-exp-submit,
-    .published-form-wrap .form-preview.btn-shape-rounded .btn,
-    .published-form-wrap .form-preview.btn-shape-rounded .btn-exp-submit { border-radius:16px !important; }
-    .site-form-panel.btn-shape-pill .btn,
-    .preview-box.btn-shape-pill .btn,
-    .site-inline-wrap.btn-shape-pill .btn,
-    .published-form-wrap.btn-shape-pill .btn,
-    .site-form-panel .form-preview.btn-shape-pill .btn,
-    .site-form-panel .form-preview.btn-shape-pill .btn-exp-submit,
-    .preview-box .form-preview.btn-shape-pill .btn,
-    .preview-box .form-preview.btn-shape-pill .btn-exp-submit,
-    .site-inline-wrap .form-preview.btn-shape-pill .btn,
-    .site-inline-wrap .form-preview.btn-shape-pill .btn-exp-submit,
-    .published-form-wrap .form-preview.btn-shape-pill .btn,
-    .published-form-wrap .form-preview.btn-shape-pill .btn-exp-submit { border-radius:999px !important; }
-    .site-form-panel.btn-shape-soft .btn,
-    .preview-box.btn-shape-soft .btn,
-    .site-inline-wrap.btn-shape-soft .btn,
-    .published-form-wrap.btn-shape-soft .btn,
-    .site-form-panel .form-preview.btn-shape-soft .btn,
-    .site-form-panel .form-preview.btn-shape-soft .btn-exp-submit,
-    .preview-box .form-preview.btn-shape-soft .btn,
-    .preview-box .form-preview.btn-shape-soft .btn-exp-submit,
-    .site-inline-wrap .form-preview.btn-shape-soft .btn,
-    .site-inline-wrap .form-preview.btn-shape-soft .btn-exp-submit,
-    .published-form-wrap .form-preview.btn-shape-soft .btn,
-    .published-form-wrap .form-preview.btn-shape-soft .btn-exp-submit { border-radius:6px !important; }
+    /* Button shapes */
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap).btn-shape-rounded :is(.btn, .btn-exp-submit),
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.btn-shape-rounded :is(.btn, .btn-exp-submit) { border-radius:16px !important; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap).btn-shape-pill :is(.btn, .btn-exp-submit),
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.btn-shape-pill :is(.btn, .btn-exp-submit) { border-radius:999px !important; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap).btn-shape-soft :is(.btn, .btn-exp-submit),
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.btn-shape-soft :is(.btn, .btn-exp-submit) { border-radius:6px !important; }
 
-    .preview-box.btn-width-wide .btn-exp-submit,
-    .site-inline-wrap.btn-width-wide .btn-exp-submit,
-    .published-form-wrap.btn-width-wide .btn-exp-submit { min-width:240px !important; }
-
-    .preview-box.btn-width-full .btn-exp-submit,
-    .site-inline-wrap.btn-width-full .btn-exp-submit,
-    .published-form-wrap.btn-width-full .btn-exp-submit {
+    /* Button widths */
+    :is(.preview-box, .site-inline-wrap, .published-form-wrap).btn-width-wide .btn-exp-submit { min-width:240px !important; }
+    :is(.preview-box, .site-inline-wrap, .published-form-wrap).btn-width-full .btn-exp-submit {
       width:100% !important;
       min-width:0 !important;
       display:block;
     }
-    .preview-box.btn-width-full .wizard-footer,
-    .site-inline-wrap.btn-width-full .wizard-footer,
-    .published-form-wrap.btn-width-full .wizard-footer {
+    :is(.preview-box, .site-inline-wrap, .published-form-wrap).btn-width-full .wizard-footer {
       flex-direction:column;
       align-items:stretch;
     }
 
     /* Design: inputs (scope to rendered forms only) */
-    .site-form-panel .form-preview.input-outlined input,
-    .site-form-panel .form-preview.input-outlined select,
-    .site-form-panel .form-preview.input-outlined textarea,
-    .preview-box .form-preview.input-outlined input,
-    .preview-box .form-preview.input-outlined select,
-    .preview-box .form-preview.input-outlined textarea,
-    .site-inline-wrap .form-preview.input-outlined input,
-    .site-inline-wrap .form-preview.input-outlined select,
-    .site-inline-wrap .form-preview.input-outlined textarea,
-    .published-form-wrap .form-preview.input-outlined input,
-    .published-form-wrap .form-preview.input-outlined select,
-      .published-form-wrap .form-preview.input-outlined textarea {
-        background:var(--ui-input-bg, var(--ui-panel-bg));
-        border:1px solid var(--ui-input-border, var(--ui-border));
-        color:var(--ui-text);
-      }
-    .site-form-panel .form-preview.input-filled input,
-    .site-form-panel .form-preview.input-filled select,
-    .site-form-panel .form-preview.input-filled textarea,
-    .preview-box .form-preview.input-filled input,
-    .preview-box .form-preview.input-filled select,
-    .preview-box .form-preview.input-filled textarea,
-    .site-inline-wrap .form-preview.input-filled input,
-    .site-inline-wrap .form-preview.input-filled select,
-    .site-inline-wrap .form-preview.input-filled textarea,
-    .published-form-wrap .form-preview.input-filled input,
-    .published-form-wrap .form-preview.input-filled select,
-    .published-form-wrap .form-preview.input-filled textarea {
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.input-outlined :is(input, select, textarea) {
+      background:var(--ui-input-bg, var(--ui-panel-bg));
+      border:1px solid var(--ui-input-border, var(--ui-border));
+      color:var(--ui-text);
+    }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.input-filled :is(input, select, textarea) {
       background:color-mix(in srgb, var(--ui-input-bg, var(--ui-panel-bg)) 85%, var(--ui-border) 15%);
       border:1px solid var(--ui-input-border, var(--ui-border));
       color:var(--ui-text);
     }
-    .site-form-panel .form-preview.input-radius-standard input,
-    .site-form-panel .form-preview.input-radius-standard select,
-    .site-form-panel .form-preview.input-radius-standard textarea,
-    .preview-box .form-preview.input-radius-standard input,
-    .preview-box .form-preview.input-radius-standard select,
-    .preview-box .form-preview.input-radius-standard textarea,
-    .site-inline-wrap .form-preview.input-radius-standard input,
-    .site-inline-wrap .form-preview.input-radius-standard select,
-    .site-inline-wrap .form-preview.input-radius-standard textarea,
-    .published-form-wrap .form-preview.input-radius-standard input,
-    .published-form-wrap .form-preview.input-radius-standard select,
-    .published-form-wrap .form-preview.input-radius-standard textarea { border-radius:6px; }
-    .site-form-panel .form-preview.input-radius-soft input,
-    .site-form-panel .form-preview.input-radius-soft select,
-    .site-form-panel .form-preview.input-radius-soft textarea,
-    .preview-box .form-preview.input-radius-soft input,
-    .preview-box .form-preview.input-radius-soft select,
-    .preview-box .form-preview.input-radius-soft textarea,
-    .site-inline-wrap .form-preview.input-radius-soft input,
-    .site-inline-wrap .form-preview.input-radius-soft select,
-    .site-inline-wrap .form-preview.input-radius-soft textarea,
-    .published-form-wrap .form-preview.input-radius-soft input,
-    .published-form-wrap .form-preview.input-radius-soft select,
-    .published-form-wrap .form-preview.input-radius-soft textarea { border-radius:12px; }
-    .site-form-panel .form-preview input:focus,
-    .site-form-panel .form-preview select:focus,
-    .site-form-panel .form-preview textarea:focus,
-    .preview-box .form-preview input:focus,
-    .preview-box .form-preview select:focus,
-    .preview-box .form-preview textarea:focus,
-    .site-inline-wrap .form-preview input:focus,
-    .site-inline-wrap .form-preview select:focus,
-    .site-inline-wrap .form-preview textarea:focus,
-    .published-form-wrap .form-preview input:focus,
-    .published-form-wrap .form-preview select:focus,
-    .published-form-wrap .form-preview textarea:focus {
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.input-radius-standard :is(input, select, textarea) { border-radius:6px; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.input-radius-soft :is(input, select, textarea) { border-radius:12px; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview :is(input, select, textarea):focus {
       outline:2px solid var(--ui-focus);
       outline-offset:2px;
     }
 
     /* Design: typography (scope to rendered forms only) */
-    .site-form-panel .form-preview.type-compact,
-    .preview-box .form-preview.type-compact,
-    .site-inline-wrap .form-preview.type-compact,
-    .published-form-wrap .form-preview.type-compact { font-size:12px; }
-    .site-form-panel .form-preview.type-spacious,
-    .preview-box .form-preview.type-spacious,
-    .site-inline-wrap .form-preview.type-spacious,
-    .published-form-wrap .form-preview.type-spacious { font-size:14px; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.type-compact { font-size:12px; }
+    :is(.site-form-panel, .preview-box, .site-inline-wrap, .published-form-wrap) .form-preview.type-spacious { font-size:14px; }
     .form-display-block.align-center { text-align:center; }
     .form-display-block.align-right { text-align:right; }
     .form-display-subtitle { font-size:11px; font-weight:600; letter-spacing:.15em; color:var(--ui-accent); text-transform:uppercase; margin-bottom:6px; }
@@ -1044,17 +873,9 @@
     }
     .preview-field-inner small { font-size:10px; color:var(--ui-muted); margin-top:2px; }
 
-    .preview-box.theme-dark .form-preview input::placeholder,
-    .preview-box.theme-dark .form-preview textarea::placeholder,
-    .site-inline-wrap.theme-dark .form-preview input::placeholder,
-    .site-inline-wrap.theme-dark .form-preview textarea::placeholder,
-    .published-form-wrap.theme-dark .form-preview input::placeholder,
-    .published-form-wrap.theme-dark .form-preview textarea::placeholder { color:rgba(255,255,255,0.65); }
+    :is(.preview-box, .site-inline-wrap, .published-form-wrap).theme-dark .form-preview :is(input, textarea)::placeholder { color:rgba(255,255,255,0.65); }
 
-    .site-hero.theme-dark .btn-exp-submit,
-    .preview-box.theme-dark .btn-exp-submit,
-    .site-inline-wrap.theme-dark .btn-exp-submit,
-    .published-form-wrap.theme-dark .btn-exp-submit {
+    :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-dark .btn-exp-submit {
       background:rgba(255,255,255,0.92);
       color:#0f172a;
       box-shadow:0 14px 34px rgba(15,23,42,0.22);
@@ -1111,14 +932,8 @@
       .btn-exp-submit:focus-visible::after { transform:translateX(0); opacity:1; }
       .btn-exp-submit:hover { filter:brightness(1.06); box-shadow:0 16px 34px rgba(15,23,42,0.22); }
       .btn-exp-submit:focus-visible { outline:2px solid var(--ui-focus); outline-offset:3px; box-shadow:0 0 0 3px rgba(15,23,42,0.14), 0 16px 34px rgba(15,23,42,0.22); }
-      .site-hero.theme-dark .btn-exp-submit:hover,
-      .preview-box.theme-dark .btn-exp-submit:hover,
-      .site-inline-wrap.theme-dark .btn-exp-submit:hover,
-      .published-form-wrap.theme-dark .btn-exp-submit:hover { filter:none; }
-      .site-hero.theme-dark .btn-exp-submit:focus-visible,
-      .preview-box.theme-dark .btn-exp-submit:focus-visible,
-      .site-inline-wrap.theme-dark .btn-exp-submit:focus-visible,
-      .published-form-wrap.theme-dark .btn-exp-submit:focus-visible { outline:2px solid rgba(255,255,255,0.92); }
+      :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-dark .btn-exp-submit:hover { filter:none; }
+      :is(.site-hero, .preview-box, .site-inline-wrap, .published-form-wrap).theme-dark .btn-exp-submit:focus-visible { outline:2px solid rgba(255,255,255,0.92); }
       .mb-15 { margin-bottom:15px; }
     .density-compact .preview-field { margin-bottom:4px; }
     .density-standard .preview-field { margin-bottom:8px; }
@@ -1149,16 +964,6 @@
     .link-modal-label select { width:100%; margin-top:4px; border:1px solid #d1d5db; border-radius:4px; padding:6px 8px; font-size:12px; }
     .link-modal-buttons { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
     .link-modal-buttons button { padding:6px 12px; border-radius:4px; font-size:12px; }
-    .text-editor-meta { display:flex; align-items:center; gap:8px; font-size:12px; margin-bottom:6px; }
-    .text-editor-toolbar { display:flex; gap:4px; margin-bottom:6px; }
-    .text-editor-toolbar button { border:1px solid #d1d5db; background:#fff; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; }
-    .text-editor-toolbar button:hover { border-color:#0f6f94; }
-    .text-editor-content { min-height:120px; border:1px solid #d1d5db; border-radius:6px; padding:8px; background:#fff; font-size:14px; line-height:1.4; }
-    .text-editor-content:focus { outline:2px solid #0f6f94; }
-    .text-editor-controls { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap; }
-    .align-controls { display:flex; gap:4px; }
-    .align-btn { border:1px solid #d1d5db; background:#fff; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:12px; }
-    .align-btn.active { border-color:#0f6f94; color:#0f6f94; font-weight:600; }
     .text-editor-link { display:flex; gap:6px; flex:1; }
     .text-editor-link input { flex:1; border:1px solid #d1d5db; border-radius:4px; padding:4px 6px; font-size:12px; }
     .text-editor-link button { border:none; background:#0f6f94; color:#fff; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:12px; }
@@ -1192,13 +997,14 @@
     .panel-toggle:focus-visible { outline:2px solid #0f6f94; outline-offset:2px; }
     .tab-bulk-actions { display:flex; justify-content:flex-end; gap:8px; margin:0 0 10px; }
     .bulk-toggle-wrap { display:flex; align-items:flex-end; margin-left:auto; }
-    .live-preview-body { margin-top:8px; overflow:hidden; max-height:2000px; opacity:1; transition:max-height 220ms ease, opacity 200ms ease, margin-top 200ms ease; }
-    .live-preview-body.collapsed { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
-    .form-display-body { margin-top:8px; overflow:hidden; max-height:2000px; opacity:1; transition:max-height 220ms ease, opacity 200ms ease, margin-top 200ms ease; }
-    .form-display-body.collapsed { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
-    .form-layout-body { margin-top:8px; overflow:hidden; max-height:2000px; opacity:1; transition:max-height 220ms ease, opacity 200ms ease, margin-top 200ms ease; }
-    .form-layout-body.collapsed { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
+    /* Collapsible panel body - shared styles */
+    .live-preview-body,
+    .form-display-body,
+    .form-layout-body,
     .field-panel-body { margin-top:8px; overflow:hidden; max-height:2000px; opacity:1; transition:max-height 220ms ease, opacity 200ms ease, margin-top 200ms ease; }
+    .live-preview-body.collapsed,
+    .form-display-body.collapsed,
+    .form-layout-body.collapsed,
     .field-panel-body.collapsed { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
     /* inline properties form when moved under a field row */
     #properties-form.inline-properties { background:#fff; border:1px solid #e9ecef; padding:8px; border-radius:6px; margin-top:8px; }
@@ -1262,6 +1068,488 @@
     .existing-field-item-meta { font-size:11px; color:#555; }
     .existing-field-item button { white-space:nowrap; }
      @media (max-width:1200px){ .layout-grid{ display:block; }}
+
+    /* Inline Confirmation Styles */
+    .inline-confirmation {
+      display: none;
+      padding: 40px 32px;
+      border-radius: 10px;
+      margin: 24px 0;
+      text-align: center;
+      animation: confirmationFadeIn 0.5s ease;
+      position: relative;
+    }
+    .inline-confirmation.visible { display: block; }
+    .inline-confirmation.hidden { display: none; }
+    
+    /* Background styles - Experian branded */
+    .inline-confirmation.bg-light {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+    }
+    .inline-confirmation.bg-branded {
+      background: linear-gradient(135deg, #eef4ff 0%, #e0e7ff 100%);
+      border: 1px solid #c7d2fe;
+      color: #1e1b4b;
+      box-shadow: 0 8px 18px rgba(53,99,161,0.12);
+    }
+    .inline-confirmation.bg-gradient {
+      background: linear-gradient(110deg, var(--exp-beam-1), var(--exp-beam-2));
+      color: #ffffff;
+      box-shadow: 0 12px 28px rgba(56,68,142,0.25);
+    }
+    .inline-confirmation.bg-success-green {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 1px solid #6ee7b7;
+      color: #065f46;
+      box-shadow: 0 4px 12px rgba(6,95,70,0.08);
+    }
+    
+    .inline-confirmation-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      display: inline-block;
+      line-height: 1;
+    }
+    
+    .inline-confirmation-title {
+      font-size: 32px;
+      font-weight: 600;
+      margin: 0 0 14px;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+    }
+    
+    .inline-confirmation-description {
+      font-size: 16px;
+      margin: 0 0 28px;
+      line-height: 1.55;
+      opacity: 0.92;
+      max-width: 52ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .inline-confirmation-ctas {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .inline-confirmation-cta {
+      position: relative;
+      overflow: hidden;
+      padding: 13px 28px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 180ms ease;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.12);
+    }
+    
+    .inline-confirmation-cta::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.45), rgba(255,255,255,0));
+      transform: translateX(-110%);
+      transition: transform 260ms ease, opacity 260ms ease;
+      opacity: 0;
+    }
+    
+    .inline-confirmation-cta:hover::after {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    
+    .inline-confirmation-cta.primary {
+      background: var(--exp-blue);
+      color: #ffffff;
+      border: none;
+    }
+    
+    .inline-confirmation-cta.primary:hover {
+      background: var(--exp-teal);
+      box-shadow: 0 8px 20px rgba(15,111,148,0.28);
+      transform: translateY(-1px);
+    }
+    
+    .inline-confirmation-cta.secondary {
+      background: rgba(255,255,255,0.3);
+      color: inherit;
+      border: 2px solid currentColor;
+      box-shadow: none;
+    }
+    
+    .inline-confirmation.bg-light .inline-confirmation-cta.secondary {
+      background: transparent;
+      color: var(--exp-blue);
+      border-color: var(--exp-blue);
+    }
+    
+    .inline-confirmation.bg-light .inline-confirmation-cta.secondary:hover {
+      background: rgba(53,99,161,0.08);
+    }
+    
+    .inline-confirmation-cta.secondary:hover {
+      background: rgba(255,255,255,0.45);
+      transform: translateY(-1px);
+    }
+    
+    .inline-confirmation.bg-gradient .inline-confirmation-cta.primary {
+      background: #ffffff;
+      color: var(--exp-purple);
+    }
+    
+    .inline-confirmation.bg-gradient .inline-confirmation-cta.primary:hover {
+      background: rgba(255,255,255,0.95);
+    }
+    
+    .inline-confirmation.bg-gradient .inline-confirmation-cta.secondary {
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    
+    .inline-confirmation-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.08);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 180ms ease;
+      color: inherit;
+      opacity: 0.7;
+    }
+    
+    .inline-confirmation-close:hover {
+      background: rgba(0, 0, 0, 0.15);
+      transform: scale(1.08);
+      opacity: 1;
+    }
+    
+    .inline-confirmation-personalized {
+      margin-top: 36px;
+      padding-top: 36px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .inline-confirmation.bg-gradient .inline-confirmation-personalized {
+      border-top-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .inline-confirmation-personalized-heading {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 24px;
+      letter-spacing: -.01em;
+    }
+    
+    .inline-confirmation-personalized-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      text-align: left;
+    }
+    
+    .personalized-item {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      padding: 18px;
+      transition: all 180ms ease;
+    }
+    
+    .inline-confirmation.bg-gradient .personalized-item {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    
+    .personalized-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(15,23,42,0.12);
+      border-color: rgba(15,111,148,0.3);
+    }
+    
+    .inline-confirmation.bg-gradient .personalized-item:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .personalized-item-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      letter-spacing: -.01em;
+    }
+    
+    .personalized-item-description {
+      font-size: 13px;
+      margin: 0;
+      opacity: 0.88;
+      line-height: 1.5;
+    }
+    
+    /* Animations */
+    @keyframes confirmationFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .inline-confirmation.animation-slide-up {
+      animation: confirmationSlideUp 0.5s ease;
+    }
+    
+    @keyframes confirmationSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .inline-confirmation.animation-scale {
+      animation: confirmationScale 0.5s ease;
+    }
+    
+    @keyframes confirmationScale {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Modal Confirmation Styles */
+    .modal-confirmation-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+    
+    .modal-confirmation-overlay.visible {
+      display: flex;
+    }
+    
+    .modal-confirmation {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 40px 36px;
+      box-shadow: 0 20px 60px rgba(15,23,42,0.3), 0 0 1px rgba(15,23,42,0.05);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+      text-align: center;
+    }
+    
+    .modal-confirmation.size-small {
+      width: 100%;
+      max-width: 420px;
+    }
+    
+    .modal-confirmation.size-medium {
+      width: 100%;
+      max-width: 620px;
+    }
+    
+    .modal-confirmation.size-large {
+      width: 100%;
+      max-width: 840px;
+    }
+    
+    .modal-confirmation.animation-fade-in {
+      animation: modalFadeIn 0.35s ease;
+    }
+    
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .modal-confirmation.animation-slide-down {
+      animation: modalSlideDown 0.35s ease;
+    }
+    
+    @keyframes modalSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal-confirmation.animation-scale {
+      animation: modalScale 0.35s ease;
+    }
+    
+    @keyframes modalScale {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .modal-confirmation-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(0, 0, 0, 0.06);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 180ms ease;
+      color: #6b7280;
+    }
+    
+    .modal-confirmation-close:hover {
+      background: rgba(0, 0, 0, 0.12);
+      transform: scale(1.08);
+      color: #374151;
+    }
+    
+    .modal-confirmation-icon {
+      font-size: 72px;
+      margin-bottom: 24px;
+      display: inline-block;
+      line-height: 1;
+    }
+    
+    .modal-confirmation-title {
+      font-size: 36px;
+      font-weight: 600;
+      margin: 0 0 18px;
+      line-height: 1.15;
+      color: #111827;
+      letter-spacing: -.025em;
+    }
+    
+    .modal-confirmation-description {
+      font-size: 17px;
+      margin: 0 0 32px;
+      line-height: 1.6;
+      color: #4b5563;
+      max-width: 54ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .modal-confirmation-ctas {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .modal-confirmation-cta {
+      position: relative;
+      overflow: hidden;
+      padding: 14px 32px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 180ms ease;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    
+    .modal-confirmation-cta::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.45), rgba(255,255,255,0));
+      transform: translateX(-110%);
+      transition: transform 260ms ease, opacity 260ms ease;
+      opacity: 0;
+    }
+    
+    .modal-confirmation-cta:hover::after {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    
+    .modal-confirmation-cta.primary {
+      background: var(--exp-blue);
+      color: #ffffff;
+      box-shadow: 0 6px 16px rgba(53,99,161,0.24);
+    }
+    
+    .modal-confirmation-cta.primary:hover {
+      background: var(--exp-teal);
+      box-shadow: 0 10px 24px rgba(15,111,148,0.32);
+      transform: translateY(-1px);
+    }
+    
+    .modal-confirmation-cta.secondary {
+      background: #f3f4f6;
+      color: #374151;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.08);
+    }
+    
+    .modal-confirmation-cta.secondary:hover {
+      background: #e5e7eb;
+      box-shadow: 0 4px 10px rgba(15,23,42,0.12);
+      transform: translateY(-1px);
+    }
    </style>
  </head>
  <body>
@@ -1594,12 +1882,10 @@
         </div>
       </div>
 
-      <div class="form-meta-panel future-state-panel">
+      <div class="form-meta-panel">
         <div class="form-meta-panel-head">
           <div>
-            <span class="future-state-pill">Future state</span>
             <h4>Experience & Measurement</h4>
-            <p class="form-meta-helper future-state-helper">Will implement upon CJA and AEP integration.</p>
           </div>
           <button id="exp-measure-toggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="exp-measure-body">Collapse</button>
         </div>
@@ -1609,15 +1895,29 @@
           <div class="form-meta-field">
             <label for="exp-type">Form type <span class="required-indicator">*</span></label>
             <select id="exp-type" aria-required="true">
-              <option value="contact" selected>Contact</option>
-              <option value="resource">Resource Download (Gated Asset)</option>
+              <option value="contact-general" selected>Contact Us - General Inquiry</option>
+              <option value="contact-product">Contact Us - Product Inquiry</option>
+              <option value="resource">Resource/Asset Download</option>
               <option value="webinar">Webinar Registration</option>
               <option value="event">Event Registration</option>
-              <option value="newsletter">Newsletter Signup</option>
-              <option value="demo">Request a Demo</option>
-              <option value="chatbot">Chatbot</option>
+              <option value="other">Other</option>
+              <option value="demo">Demo/Free Trial</option>
             </select>
-            <div class="small">Usually inferred from the template you choose on the Form tab. Override only when needed.</div>
+            <div class="small">Inferred from the template you choose on the Form tab. Override only when needed.</div>
+          </div>
+
+          <div class="form-meta-field" id="asset-type-field" style="display: none;">
+            <label for="exp-asset-type">Asset Type <span class="required-indicator">*</span></label>
+            <select id="exp-asset-type" aria-required="true">
+              <option value="case-study">Case Study</option>
+              <option value="white-paper">White Paper</option>
+              <option value="webinar-asset">Webinar</option>
+              <option value="ebook">eBook</option>
+              <option value="infographic">Infographic</option>
+              <option value="research-report">Research Report</option>
+              <option value="video">Video</option>
+              <option value="podcast">Podcast</option>
+            </select>
           </div>
 
           <div class="form-meta-field">
@@ -1821,10 +2121,13 @@
       <div class="top-row">
         <div class="template-group">
           <label for="form-template">Form template</label>
-          <select id="form-template">
-            <option value="contact" selected>NA-US-BIS-Contact-Form</option>
-            <option value="download">NA-US-BIS-Download-Resource</option>
-          </select>
+          <div class="template-select-row">
+            <select id="form-template">
+              <option value="contact" selected>NA-US-BIS-Contact-Form</option>
+              <option value="download">NA-US-BIS-Download-Resource</option>
+            </select>
+            <button type="button" class="select-form-btn" id="select-form-btn">Select Form</button>
+          </div>
           <div class="helper">
             Choose the global form to render, then adjust layout, steps, and field settings for this page instance.
           </div>
@@ -1963,8 +2266,9 @@
           <div class="form-properties-title">Field properties</div>
 
           <div id="prop-label-wrapper">
-            <label for="prop-label">Text</label>
+            <label for="prop-label">Field label</label>
             <input id="prop-label" type="text" />
+            <div id="prop-label-error" style="display:none; color:#c00; font-size:12px; margin-top:4px;">Field label cannot be blank.</div>
           </div>
 
           <div id="prop-rich-editor-wrapper" style="display:none;">
@@ -2085,7 +2389,7 @@
             <label for="prop-placeholder">Placeholder</label>
             <input id="prop-placeholder" type="text" />
 
-            <label for="prop-help">Help text</label>
+            <label for="prop-help">Helper text</label>
             <textarea id="prop-help" rows="2"></textarea>
 
             <label for="prop-width">Width</label>
@@ -2368,8 +2672,355 @@
       </div>
     </div>
 
-    <div class="tab-panel" id="tab-confirmation">
-      <div class="helper">Confirmation tab retains Redirect / Modal / Download options and copy.</div>
+    <div class="tab-panel" id="tab-confirmation" style="padding:16px;">
+      <!-- CONFIRMATION TARGET -->
+      <div class="form-display-grid" style="margin-bottom:16px;">
+        <label for="confirmation-target" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+          Confirmation target *
+          <select id="confirmation-target" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            <option value="redirect">Redirect</option>
+            <option value="modal">Modal</option>
+            <option value="inline">In-line</option>
+            <option value="download">Download</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- DEFAULT PAGE (dynamic) -->
+      <div class="form-display-grid" id="default-page-group" style="margin-bottom:16px;">
+        <label for="default-input" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+          <span id="default-label">Choose default confirmation page *</span>
+          <input type="text" id="default-input" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+        </label>
+      </div>
+
+      <!-- INLINE CONFIRMATION CONFIGURATION -->
+      <div id="inline-config-panel" style="display:none; border:1px solid #e5e7eb; border-radius:8px; padding:16px; background:#fafafa; margin-bottom:16px;">
+        <h4 style="margin:0 0 16px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#111827; font-weight:600;">In-line Confirmation Settings</h4>
+        
+        <!-- Success Message Section -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff; margin-bottom:14px;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Success Message</h5>
+          
+          <div class="form-display-grid" style="margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Title *
+              <input type="text" id="inline-title" placeholder="Thank you for your submission!" value="Thank you!" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+          </div>
+          
+          <div class="form-display-grid" style="margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Description
+              <textarea id="inline-description" rows="3" placeholder="We've received your information and will be in touch soon." style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff; resize:vertical;">We've received your information and will be in touch soon.</textarea>
+            </label>
+          </div>
+          
+          <div class="form-layout-grid" style="grid-template-columns:1fr 1fr; gap:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Icon
+              <select id="inline-icon" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="checkmark">✓ Checkmark</option>
+                <option value="checkmark-circle">✓ Checkmark Circle</option>
+                <option value="thumbs-up">👍 Thumbs Up</option>
+                <option value="party">🎉 Party</option>
+                <option value="star">⭐ Star</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Animation
+              <select id="inline-animation" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="fade-in">Fade In</option>
+                <option value="slide-up">Slide Up</option>
+                <option value="scale">Scale</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Call-to-Action Buttons -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff; margin-bottom:14px;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Call-to-Action Buttons</h5>
+          
+          <div class="form-layout-grid" style="grid-template-columns:2fr 3fr; gap:10px; margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Primary Button Text
+              <input type="text" id="inline-cta-primary-text" placeholder="Browse Solutions" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Primary Button URL
+              <input type="text" id="inline-cta-primary-url" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+          </div>
+          
+          <div class="form-layout-grid" style="grid-template-columns:2fr 3fr; gap:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Secondary Button Text
+              <input type="text" id="inline-cta-secondary-text" placeholder="Learn More" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Secondary Button URL
+              <input type="text" id="inline-cta-secondary-url" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+          </div>
+        </div>
+        
+        <!-- Personalized Content Section -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff; margin-bottom:14px;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Personalized Content (Optional)</h5>
+          
+          <div style="margin-bottom:10px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500;">
+              <input type="checkbox" id="inline-enable-personalized" style="width:auto; margin:0;">
+              <span>Display personalized content recommendations</span>
+            </label>
+          </div>
+          
+          <div id="personalized-content-config" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid #e5e7eb;">
+            <div class="form-layout-grid" style="grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+              <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+                Content Type *
+                <select id="inline-content-type" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                  <option value="articles">Articles & Resources</option>
+                  <option value="products">Related Products</option>
+                  <option value="services">Related Services</option>
+                  <option value="solutions">Solutions</option>
+                  <option value="case-studies">Case Studies</option>
+                  <option value="videos">Videos</option>
+                  <option value="webinars">Webinars</option>
+                  <option value="tools">Tools & Calculators</option>
+                </select>
+              </label>
+              
+              <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+                Number of Items *
+                <select id="inline-content-count" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                  <option value="2">2 items</option>
+                  <option value="3" selected>3 items</option>
+                  <option value="4">4 items</option>
+                  <option value="6">6 items</option>
+                </select>
+              </label>
+            </div>
+            
+            <div class="form-display-grid" style="margin-bottom:10px;">
+              <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+                Analytics Tag / Category ID
+                <input type="text" id="inline-analytics-tag" placeholder="e.g., business-solutions, credit-monitoring" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+              </label>
+            </div>
+            
+            <div class="form-display-grid">
+              <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+                Section Heading
+                <input type="text" id="inline-content-heading" placeholder="You might also be interested in" value="You might also be interested in" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Display & Behavior Settings -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Display & Behavior</h5>
+          
+          <div class="form-layout-grid" style="grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Background Style
+              <select id="inline-bg-style" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="light">Light</option>
+                <option value="branded">Branded</option>
+                <option value="gradient">Gradient</option>
+                <option value="success-green">Success Green</option>
+              </select>
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Auto-hide After
+              <select id="inline-auto-hide" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="0">Never (Manual dismiss)</option>
+                <option value="5">5 seconds</option>
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
+                <option value="30">30 seconds</option>
+              </select>
+            </label>
+          </div>
+          
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500;">
+              <input type="checkbox" id="inline-show-close" checked style="width:auto; margin:0;">
+              <span>Show close button</span>
+            </label>
+            
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500;">
+              <input type="checkbox" id="inline-hide-form" checked style="width:auto; margin:0;">
+              <span>Hide form after submission</span>
+            </label>
+            
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500;">
+              <input type="checkbox" id="inline-scroll-to" checked style="width:auto; margin:0;">
+              <span>Scroll to confirmation</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL CONFIRMATION CONFIGURATION -->
+      <div id="modal-config-panel" style="display:none; border:1px solid #e5e7eb; border-radius:8px; padding:16px; background:#fafafa; margin-bottom:16px;">
+        <h4 style="margin:0 0 16px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#111827; font-weight:600;">Modal Confirmation Settings</h4>
+        
+        <!-- Modal Content Section -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff; margin-bottom:14px;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Modal Content</h5>
+          
+          <div class="form-display-grid" style="margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Title *
+              <input type="text" id="modal-title" placeholder="Thank you for your submission!" value="Thank you!" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+          </div>
+          
+          <div class="form-display-grid" style="margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Description
+              <textarea id="modal-description" rows="3" placeholder="We've received your information and will be in touch soon." style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff; resize:vertical;">We've received your information and will be in touch soon.</textarea>
+            </label>
+          </div>
+          
+          <div class="form-layout-grid" style="grid-template-columns:1fr 1fr; gap:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Icon
+              <select id="modal-icon" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="checkmark">✓ Checkmark</option>
+                <option value="checkmark-circle">✓ Checkmark Circle</option>
+                <option value="thumbs-up">👍 Thumbs Up</option>
+                <option value="party">🎉 Party</option>
+                <option value="star">⭐ Star</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Animation
+              <select id="modal-animation" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="fade-in">Fade In</option>
+                <option value="slide-down">Slide Down</option>
+                <option value="scale">Scale</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Call-to-Action Buttons -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff; margin-bottom:14px;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Call-to-Action Buttons</h5>
+          
+          <div class="form-layout-grid" style="grid-template-columns:2fr 3fr; gap:10px; margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Primary Button Text
+              <input type="text" id="modal-cta-primary-text" placeholder="Browse Solutions" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Primary Button URL
+              <input type="text" id="modal-cta-primary-url" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+          </div>
+          
+          <div class="form-layout-grid" style="grid-template-columns:2fr 3fr; gap:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Secondary Button Text
+              <input type="text" id="modal-cta-secondary-text" placeholder="Close" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Secondary Button URL
+              <input type="text" id="modal-cta-secondary-url" placeholder="https:// or leave empty to close modal" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+            </label>
+          </div>
+        </div>
+        
+        <!-- Display & Behavior Settings -->
+        <div style="border:1px solid #e5e7eb; border-radius:6px; padding:14px; background:#fff;">
+          <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; color:#374151;">Display & Behavior</h5>
+          
+          <div class="form-layout-grid" style="grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Modal Size
+              <select id="modal-size" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="small">Small (400px)</option>
+                <option value="medium" selected>Medium (600px)</option>
+                <option value="large">Large (800px)</option>
+              </select>
+            </label>
+            
+            <label style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+              Auto-close After
+              <select id="modal-auto-close" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+                <option value="0">Never (Manual close)</option>
+                <option value="5">5 seconds</option>
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
+              </select>
+            </label>
+          </div>
+          
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500;">
+              <input type="checkbox" id="modal-show-close" checked style="width:auto; margin:0;">
+              <span>Show close button (X)</span>
+            </label>
+            
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:500;">
+              <input type="checkbox" id="modal-close-on-overlay" checked style="width:auto; margin:0;">
+              <span>Close when clicking outside</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONDITIONAL LOGIC TOGGLE -->
+      <div style="margin-bottom:16px;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:12px; font-weight:600;">
+          <input type="checkbox" id="toggle-conditional" style="width:auto; margin:0;">
+          <span>Conditional Logic</span>
+        </label>
+      </div>
+
+      <!-- CONDITIONAL BUILDER (hidden until toggle) -->
+      <div id="conditional-builder" style="display:none; margin-top:20px;">
+        <div style="border:1px solid #e1e1e1; border-radius:6px; padding:16px; background:#fafafa; margin-bottom:16px;">
+          <h4 style="margin:0 0 12px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#555;">Conditions</h4>
+          <div id="conditions-container" style="margin-bottom:12px;"></div>
+          <button id="add-condition-btn" type="button" class="btn btn-secondary" style="font-size:12px;">+ Add Condition</button>
+        </div>
+
+        <!-- ALTERNATE CONFIRMATION -->
+        <div class="form-display-grid" style="margin-bottom:16px;">
+          <label for="alternate-confirmation-target" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+            Alternate confirmation target *
+            <select id="alternate-confirmation-target" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+              <option value="redirect">Redirect</option>
+              <option value="modal">Modal</option>
+              <option value="inline">In-line</option>
+              <option value="download">Download</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-display-grid" id="alternate-confirmation-group">
+          <label for="alternate-confirmation-url" style="font-size:11px; font-weight:600; color:#374151; display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.05em;">
+            Alternate confirmation URL *
+            <input type="text" id="alternate-confirmation-url" placeholder="https://" style="font-size:12px; padding:6px 8px; border-radius:5px; border:1px solid #d1d5db; background:#fff;">
+          </label>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -2664,6 +3315,14 @@
     if (!t) return;
     if (t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') return;
     syncLiveValidationForControl(t);
+    
+    // Handle conditional Asset Type field display
+    if (t.id === 'exp-type') {
+      var assetTypeField = document.getElementById('asset-type-field');
+      if (assetTypeField) {
+        assetTypeField.style.display = (t.value === 'resource') ? '' : 'none';
+      }
+    }
   }, true);
 
   var siteCta = document.getElementById('site-cta');
@@ -4000,6 +4659,26 @@
     // Validate current configuration before publishing.
     try { renderPreview(); } catch (e) {}
     var currentCfg = getConfigFromUI();
+    
+    // Check for blank field labels
+    var hasBlankLabels = false;
+    currentCfg.forEach(function(cfg) {
+      if (cfg && cfg.type === 'field' && (!cfg.label || cfg.label.trim() === '')) {
+        hasBlankLabels = true;
+      }
+    });
+    
+    if (hasBlankLabels) {
+      showRendererBanner('Cannot publish: One or more fields have blank labels. Please provide a field label for all fields.', { sticky: true });
+      // Show error on the currently selected field if it's blank
+      var propLabelInput = document.getElementById('prop-label');
+      var propLabelError = document.getElementById('prop-label-error');
+      if (propLabelInput && propLabelError && (!propLabelInput.value || propLabelInput.value.trim() === '')) {
+        propLabelError.style.display = 'block';
+      }
+      return;
+    }
+    
     var report = getRendererValidationReport(currentCfg);
     if (report && report.errors && report.errors.length) {
       showRendererBanner('Cannot publish: ' + report.errors.join(' '), { sticky: true });
@@ -6396,6 +7075,12 @@
   if (propLabel) {
     var propLabelPreviewTimer = null;
     propLabel.addEventListener('input', function(){
+      // Hide error message when user starts typing
+      var propLabelError = document.getElementById('prop-label-error');
+      if (propLabelError) {
+        propLabelError.style.display = 'none';
+      }
+      
       if (!selectedFieldId || !fieldConfigContainer) return;
       var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
       if (!row || !row._cfg || row._cfg.type !== 'field') return;
@@ -6412,6 +7097,158 @@
       propLabelPreviewTimer = setTimeout(function(){
         try { renderPreview(); } catch (e) {}
       }, 120);
+    });
+  }
+
+  // Live-update the helper text as the author types.
+  if (propHelp) {
+    var propHelpPreviewTimer = null;
+    propHelp.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+
+      // Keep the underlying config in sync so the preview/form updates too.
+      row._cfg.help = propHelp.value || '';
+
+      // Debounce preview rendering while typing.
+      if (propHelpPreviewTimer) clearTimeout(propHelpPreviewTimer);
+      propHelpPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update placeholder as the author types.
+  if (propPlaceholder) {
+    var propPlaceholderPreviewTimer = null;
+    propPlaceholder.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+
+      // Keep the underlying config in sync so the preview/form updates too.
+      row._cfg.placeholder = propPlaceholder.value || '';
+
+      // Debounce preview rendering while typing.
+      if (propPlaceholderPreviewTimer) clearTimeout(propPlaceholderPreviewTimer);
+      propPlaceholderPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update field type.
+  if (propType) {
+    propType.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      var isStandard = (row._cfg.id && row._cfg.id.indexOf('custom_') !== 0);
+      if (!isStandard) {
+        row._cfg.fieldType = propType.value || row._cfg.fieldType;
+        row._cfg = Object.assign({}, row._cfg);
+        try { renderPreview(); } catch (e) {}
+      }
+    });
+  }
+
+  // Live-update width.
+  if (propWidth) {
+    propWidth.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      row._cfg.width = propWidth.value || 'full';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update HTML name.
+  if (propHtml) {
+    var propHtmlPreviewTimer = null;
+    propHtml.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'field') return;
+      var isStandard = (row._cfg.id && row._cfg.id.indexOf('custom_') !== 0);
+      if (!isStandard) {
+        row._cfg.html = propHtml.value || '';
+        row._cfg = Object.assign({}, row._cfg);
+        // Debounce preview rendering while typing.
+        if (propHtmlPreviewTimer) clearTimeout(propHtmlPreviewTimer);
+        propHtmlPreviewTimer = setTimeout(function(){
+          try { renderPreview(); } catch (e) {}
+        }, 120);
+      }
+    });
+  }
+
+  // Live-update step (for wizard layout).
+  if (propStep) {
+    propStep.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg) return;
+      if (getSelectedLayout() === 'wizard') {
+        row._cfg.step = parseInt(propStep.value, 10) || 1;
+        row._cfg = Object.assign({}, row._cfg);
+        try { renderPreview(); } catch (e) {}
+      }
+    });
+  }
+
+  // Live-update font size (for text blocks).
+  if (propFontSize) {
+    propFontSize.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.fontSize = propFontSize.value || 'body';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update alignment (for text blocks).
+  if (propAlign) {
+    propAlign.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.align = propAlign.value || 'left';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
+    });
+  }
+
+  // Live-update URL (for text blocks with links).
+  if (propUrl) {
+    var propUrlPreviewTimer = null;
+    propUrl.addEventListener('input', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.url = propUrl.value || '';
+      row._cfg = Object.assign({}, row._cfg);
+      // Debounce preview rendering while typing.
+      if (propUrlPreviewTimer) clearTimeout(propUrlPreviewTimer);
+      propUrlPreviewTimer = setTimeout(function(){
+        try { renderPreview(); } catch (e) {}
+      }, 120);
+    });
+  }
+
+  // Live-update link target (for text blocks with links).
+  if (propLinkTarget) {
+    propLinkTarget.addEventListener('change', function(){
+      if (!selectedFieldId || !fieldConfigContainer) return;
+      var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+      if (!row || !row._cfg || row._cfg.type !== 'text') return;
+      row._cfg.target = propLinkTarget.value || '_blank';
+      row._cfg = Object.assign({}, row._cfg);
+      try { renderPreview(); } catch (e) {}
     });
   }
 
@@ -6482,6 +7319,17 @@
       if (!propOptionsList) return;
       propOptionsList.appendChild(createOptionInputRow(''));
       if (propOptionsWrapper) propOptionsWrapper.style.display = '';
+      
+      // Update the config and preview after adding a new option
+      if (selectedFieldId && fieldConfigContainer) {
+        var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+        if (row && row._cfg && row._cfg.type === 'field') {
+          var optionValues = collectOptionValues();
+          row._cfg.options = optionValues;
+          row._cfg = Object.assign({}, row._cfg);
+          try { renderPreview(); } catch (e) {}
+        }
+      }
     });
   }
 
@@ -6491,6 +7339,38 @@
         e.preventDefault();
         var row = e.target.closest('.option-row');
         if (row) row.remove();
+        
+        // Update the config and preview after deleting an option
+        if (selectedFieldId && fieldConfigContainer) {
+          var fieldRow = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+          if (fieldRow && fieldRow._cfg && fieldRow._cfg.type === 'field') {
+            var optionValues = collectOptionValues();
+            fieldRow._cfg.options = optionValues;
+            fieldRow._cfg = Object.assign({}, fieldRow._cfg);
+            try { renderPreview(); } catch (e) {}
+          }
+        }
+      }
+    });
+    
+    // Live-update options as they are edited
+    var optionInputTimer = null;
+    propOptionsList.addEventListener('input', function(e){
+      if (e.target && e.target.classList.contains('option-input')) {
+        if (!selectedFieldId || !fieldConfigContainer) return;
+        var row = fieldConfigContainer.querySelector('[data-id="' + selectedFieldId + '"]');
+        if (!row || !row._cfg || row._cfg.type !== 'field') return;
+        
+        // Update the config with current option values
+        var optionValues = collectOptionValues();
+        row._cfg.options = optionValues;
+        row._cfg = Object.assign({}, row._cfg);
+        
+        // Debounce preview rendering while typing
+        if (optionInputTimer) clearTimeout(optionInputTimer);
+        optionInputTimer = setTimeout(function(){
+          try { renderPreview(); } catch (err) {}
+        }, 120);
       }
     });
   }
@@ -6869,6 +7749,56 @@
       if (metaInputs[key]) metaInputs[key].value = '';
       renderMetaField(key);
     });
+  }
+
+  function clearAllProperties() {
+    // Clear form meta state
+    FORM_META_KEYS.forEach(function(key){
+      formMetaState[key] = '';
+      if (metaInputs[key]) metaInputs[key].value = '';
+      renderMetaField(key);
+    });
+    
+    // Reset Experience & Measurement fields to defaults
+    var expType = document.getElementById('exp-type');
+    var expAssetType = document.getElementById('exp-asset-type');
+    var expFunnel = document.getElementById('exp-funnel');
+    var expProduct = document.getElementById('exp-product');
+    var expCapture = document.getElementById('exp-capture');
+    var expCampaign = document.getElementById('exp-campaign');
+    var expRouting = document.getElementById('exp-routing');
+    var assetTypeField = document.getElementById('asset-type-field');
+    
+    if (expType) expType.value = 'contact-general';
+    if (expAssetType) expAssetType.value = 'case-study';
+    if (assetTypeField) assetTypeField.style.display = 'none';
+    if (expFunnel) expFunnel.value = 'mofu';
+    if (expProduct) expProduct.value = 'auto';
+    if (expCapture) expCapture.value = 'inline';
+    if (expCampaign) expCampaign.value = '';
+    if (expRouting) expRouting.value = 'aep_auto';
+    
+    // Reset Page context fields
+    var ctxBuSource = document.getElementById('ctx-bu-source');
+    var ctxAssetSource = document.getElementById('ctx-asset-source');
+    var ctxBuLookupKey = document.getElementById('ctx-bu-lookup-key');
+    var ctxAssetLookupKey = document.getElementById('ctx-asset-lookup-key');
+    var ctxAssetManual = document.getElementById('ctx-asset-manual');
+    
+    if (ctxBuSource) ctxBuSource.value = 'auto';
+    if (ctxAssetSource) ctxAssetSource.value = 'auto';
+    if (ctxBuLookupKey) {
+      ctxBuLookupKey.style.display = 'none';
+      ctxBuLookupKey.value = '';
+    }
+    if (ctxAssetLookupKey) {
+      ctxAssetLookupKey.style.display = 'none';
+      ctxAssetLookupKey.value = '';
+    }
+    if (ctxAssetManual) {
+      ctxAssetManual.style.display = 'none';
+      ctxAssetManual.value = '';
+    }
   }
 
   function renderMetaField(key) {
@@ -7396,13 +8326,63 @@
   refreshBtn.addEventListener('click', function(){ renderPreview(); scheduleHistorySnapshot(); });
   addFieldBtn.addEventListener('click', function(e){ e.preventDefault(); addCustomField(); scheduleHistorySnapshot(); });
   addTextBtn.addEventListener('click', function(e){ e.preventDefault(); addTextBlock(); scheduleHistorySnapshot(); });
+  
+  // Select Form button handler
+  var selectFormBtn = document.getElementById('select-form-btn');
+  if (selectFormBtn) {
+    selectFormBtn.addEventListener('click', function() {
+      var selectedTemplate = templateSelect.value;
+      loadTemplate(selectedTemplate);
+      applyTemplateMetaDefaults(selectedTemplate);
+      updateStepVisibility();
+      renderPreview();
+      pushHistory('form-selected');
+      // Update confirmation fields after form is loaded
+      if (typeof window.updateConfirmationFields === 'function') {
+        setTimeout(function() {
+          window.updateConfirmationFields();
+        }, 100);
+      }
+    });
+  }
+  
   templateSelect.addEventListener('change', function () {
-    loadTemplate(templateSelect.value);
-    applyTemplateMetaDefaults(templateSelect.value);
-    updateStepVisibility();
-    currentStep = 1;
-    renderPreview();
-    pushHistory('template-change');
+    // Template changed - clear all previous template data
+    // Clear field configuration
+    if (fieldConfigContainer) {
+      fieldConfigContainer.innerHTML = '<div class="field-config-empty" style="padding:20px; text-align:center; color:#6b7280;">Click "Select Form" to load the selected form template.</div>';
+    }
+    // Clear selected field
+    selectedFieldId = null;
+    // Hide and restore properties form
+    if (propertiesForm) {
+      propertiesForm.style.display = 'none';
+      restorePropertiesForm();
+    }
+    // Clear preview
+    if (previewContainer) {
+      previewContainer.innerHTML = '<div class="field-config-empty" style="padding:20px; text-align:center; color:#6b7280;">Preview will appear after selecting a form template.</div>';
+    }
+    // Clear all property values
+    clearAllProperties();
+    // Clear confirmation conditions
+    var conditionsContainer = document.getElementById('conditions-container');
+    if (conditionsContainer) {
+      conditionsContainer.innerHTML = '';
+    }
+    // Clear available fields for confirmation
+    if (typeof window.clearConfirmationFields === 'function') {
+      window.clearConfirmationFields();
+    }
+    // Reset confirmation toggle
+    var toggleConditional = document.getElementById('toggle-conditional');
+    if (toggleConditional) {
+      toggleConditional.checked = false;
+    }
+    var conditionalBuilder = document.getElementById('conditional-builder');
+    if (conditionalBuilder) {
+      conditionalBuilder.style.display = 'none';
+    }
   });
   if (densitySelect) {
     densitySelect.addEventListener('change', function(){ renderPreview(); scheduleHistorySnapshot(); });
@@ -7659,13 +8639,831 @@
 
   initializeFormDisplayDefaults();
   applyDesignSelections();
-  loadTemplate(templateSelect.value);
-  applyTemplateMetaDefaults(templateSelect.value);
+  // Don't load template automatically - wait for user to click "Select Form" button
+  // loadTemplate(templateSelect.value);
+  // applyTemplateMetaDefaults(templateSelect.value);
   updateStepVisibility();
-  applyTemplateMetaDefaults(templateSelect.value);
-  renderPreview();
+  // Show initial empty state
+  if (fieldConfigContainer) {
+    fieldConfigContainer.innerHTML = '<div class="field-config-empty" style="padding:20px; text-align:center; color:#6b7280;">Select a form template above and click "Select Form" to load form fields and properties.</div>';
+  }
   pushHistory('init');
   updateUndoRedoButtons();
+
+  // Confirmation Logic Builder
+  (function() {
+    console.debug('[confirmation] Initializing confirmation logic builder');
+
+    var toggle = document.getElementById('toggle-conditional');
+    var builder = document.getElementById('conditional-builder');
+    var conditionsContainer = document.getElementById('conditions-container');
+    var addConditionBtn = document.getElementById('add-condition-btn');
+    var confirmationTarget = document.getElementById('confirmation-target');
+    var alternateConfirmationTarget = document.getElementById('alternate-confirmation-target');
+    var defaultLabel = document.getElementById('default-label');
+    var defaultInput = document.getElementById('default-input');
+    var alternateConfirmationUrl = document.getElementById('alternate-confirmation-url');
+    var availableFields = [];
+    
+    // Make availableFields accessible globally for clearing
+    window.clearConfirmationFields = function() {
+      availableFields = [];
+    };
+
+    if (!toggle || !builder) return;
+
+    // Populate available fields from loaded template
+    function populateAvailableFields() {
+      availableFields = [];
+      var rows = fieldConfigContainer ? fieldConfigContainer.querySelectorAll('.field-row') : [];
+      rows.forEach(function(row) {
+        var cfg = row._cfg;
+        if (!cfg) return;
+        
+        var fieldType = cfg.fieldType;
+        var fieldId = cfg.id;
+        var label = cfg.label;
+        var options = cfg.options || [];
+        
+        // Only include dropdown, checkbox, radio, and multiselect fields
+        if ((fieldType === 'dropdown' || fieldType === 'checkbox' || fieldType === 'radio' || fieldType === 'multiselect') && label) {
+          availableFields.push({
+            id: fieldId,
+            label: label,
+            type: fieldType,
+            options: options
+          });
+        }
+      });
+      console.debug('[confirmation] Found ' + availableFields.length + ' selectable fields:', availableFields);
+    }
+
+    // Call this when form is loaded
+    window.updateConfirmationFields = populateAvailableFields;
+
+    // Set initial state based on toggle
+    builder.style.display = toggle.checked ? 'block' : 'none';
+
+    toggle.addEventListener('change', function() {
+      builder.style.display = toggle.checked ? 'block' : 'none';
+      if (toggle.checked && conditionsContainer && conditionsContainer.children.length === 0) {
+        addCondition();
+      }
+    });
+
+    // Add condition button
+    if (addConditionBtn) {
+      addConditionBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var conditionCount = conditionsContainer.querySelectorAll('.condition-row').length;
+        
+        if (conditionCount >= 5) {
+          var err = document.getElementById('condition-limit-error');
+          if (!err) {
+            err = document.createElement('div');
+            err.id = 'condition-limit-error';
+            err.textContent = 'Maximum 5 conditions allowed';
+            err.style.cssText = 'color:#c00; font-size:12px; margin-top:8px;';
+            addConditionBtn.after(err);
+            setTimeout(function() { if (err) err.remove(); }, 3000);
+          }
+          return;
+        }
+        addCondition();
+        updateRemoveButtons();
+      });
+    }
+
+    function addCondition(withOperator) {
+      if (!conditionsContainer) return;
+      
+      var conditionCount = conditionsContainer.querySelectorAll('.condition-row').length;
+      withOperator = conditionCount > 0;
+
+      var row = document.createElement('div');
+      row.className = 'condition-row';
+      row.style.cssText = 'display:grid; grid-template-columns:' + (withOperator ? 'auto ' : '') + '1fr auto 1fr auto; gap:8px; align-items:center; margin-bottom:8px; padding:8px; background:#fff; border-radius:4px; border:1px solid #e5e7eb;';
+
+      if (withOperator) {
+        var operatorSelect = document.createElement('select');
+        operatorSelect.className = 'operator-select';
+        operatorSelect.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+        operatorSelect.innerHTML = '<option value="and">AND</option><option value="or">OR</option>';
+        row.appendChild(operatorSelect);
+      }
+
+      var fieldSelect = document.createElement('select');
+      fieldSelect.className = 'field-name-select';
+      fieldSelect.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+      
+      // Populate with available fields
+      if (availableFields.length === 0) {
+        fieldSelect.innerHTML = '<option value="">Load a form first</option>';
+      } else {
+        fieldSelect.innerHTML = '<option value="">Select a field...</option>';
+        availableFields.forEach(function(field) {
+          var option = document.createElement('option');
+          option.value = field.id;
+          option.textContent = field.label + ' (' + field.type + ')';
+          fieldSelect.appendChild(option);
+        });
+      }
+      row.appendChild(fieldSelect);
+
+      var equalsLabel = document.createElement('span');
+      equalsLabel.className = 'equals-label';
+      equalsLabel.textContent = '=';
+      equalsLabel.style.cssText = 'font-weight:600; color:#374151;';
+      row.appendChild(equalsLabel);
+
+      var valueInput = document.createElement('input');
+      valueInput.type = 'text';
+      valueInput.className = 'field-value-input';
+      valueInput.placeholder = 'Value (e.g., United States)';
+      valueInput.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+      row.appendChild(valueInput);
+
+      // When field is selected, update value input to show options
+      fieldSelect.addEventListener('change', function() {
+        var selectedFieldId = fieldSelect.value;
+        
+        if (!selectedFieldId) return;
+        
+        var selectedField = availableFields.find(function(f) { return f.id === selectedFieldId; });
+        if (!selectedField || !selectedField.options || selectedField.options.length === 0) {
+          // If no options, keep as text input
+          return;
+        }
+        
+        // Replace text input with dropdown
+        var valueSelect = document.createElement('select');
+        valueSelect.className = 'field-value-select';
+        valueSelect.style.cssText = 'padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;';
+        
+        valueSelect.innerHTML = '<option value="">Select a value...</option>';
+        
+        // Get all field+value combinations already used
+        var usedCombinations = getUsedFieldValueCombinations();
+        var usedValuesForThisField = usedCombinations[selectedFieldId] || [];
+        
+        selectedField.options.forEach(function(option) {
+          var opt = document.createElement('option');
+          opt.value = option;
+          opt.textContent = option;
+          
+          // Disable if this field+value combination is already used
+          var isUsed = usedValuesForThisField.includes(option);
+          opt.disabled = isUsed;
+          if (isUsed) {
+            opt.style.color = '#9ca3af';
+          }
+          
+          valueSelect.appendChild(opt);
+        });
+        
+        // When value changes, update grey-out states for all rows
+        valueSelect.addEventListener('change', function() {
+          updateAllValueSelectStates();
+        });
+        
+        // Replace the input with the select
+        valueInput.replaceWith(valueSelect);
+        valueInput = valueSelect;
+      });
+
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = '−';
+      removeBtn.type = 'button';
+      removeBtn.style.cssText = 'background:#ef4444; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:16px; line-height:1;';
+      removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        row.remove();
+        updateRemoveButtons();
+        updateAllValueSelectStates();
+      });
+      row.appendChild(removeBtn);
+
+      conditionsContainer.appendChild(row);
+      updateRemoveButtons();
+    }
+
+    function updateRemoveButtons() {
+      if (!conditionsContainer) return;
+      var rows = conditionsContainer.querySelectorAll('.condition-row');
+      rows.forEach(function(row, idx) {
+        var btn = row.querySelector('.remove-btn');
+        if (btn) {
+          btn.style.display = (idx === 0) ? 'none' : 'inline-block';
+        }
+      });
+    }
+
+    function getUsedFieldValueCombinations() {
+      // Returns an object like { fieldId: [value1, value2], ... }
+      var combinations = {};
+      if (!conditionsContainer) return combinations;
+      
+      var allRows = conditionsContainer.querySelectorAll('.condition-row');
+      allRows.forEach(function(row) {
+        var fieldSelect = row.querySelector('.field-name-select');
+        var valueSelect = row.querySelector('.field-value-select');
+        
+        if (fieldSelect && valueSelect && fieldSelect.value && valueSelect.value) {
+          var fieldId = fieldSelect.value;
+          var value = valueSelect.value;
+          
+          if (!combinations[fieldId]) {
+            combinations[fieldId] = [];
+          }
+          combinations[fieldId].push(value);
+        }
+      });
+      
+      return combinations;
+    }
+
+    function updateAllValueSelectStates() {
+      if (!conditionsContainer) return;
+      
+      var usedCombinations = getUsedFieldValueCombinations();
+      var allRows = conditionsContainer.querySelectorAll('.condition-row');
+      
+      allRows.forEach(function(row) {
+        var fieldSelect = row.querySelector('.field-name-select');
+        var valueSelect = row.querySelector('.field-value-select');
+        
+        if (!fieldSelect || !valueSelect || !fieldSelect.value) return;
+        
+        var currentFieldId = fieldSelect.value;
+        var currentValue = valueSelect.value;
+        var usedValuesForThisField = usedCombinations[currentFieldId] || [];
+        
+        var options = valueSelect.querySelectorAll('option');
+        options.forEach(function(option) {
+          if (!option.value) {
+            // Keep placeholder enabled
+            option.disabled = false;
+            return;
+          }
+          
+          // Disable if this value is used in another row for the same field
+          var isUsedElsewhere = usedValuesForThisField.includes(option.value) && option.value !== currentValue;
+          option.disabled = isUsedElsewhere;
+          
+          if (isUsedElsewhere) {
+            option.style.color = '#9ca3af';
+          } else {
+            option.style.color = '';
+          }
+        });
+      });
+    }
+
+    function updateInputForTarget(targetSelect, labelElement, inputElement) {
+      if (!targetSelect || !labelElement || !inputElement) return;
+      var type = targetSelect.value;
+      
+      if (type === 'redirect') {
+        labelElement.textContent = labelElement.id === 'default-label' ? 'Choose default confirmation page *' : 'Alternate confirmation URL *';
+        inputElement.placeholder = 'https://';
+        inputElement.type = 'text';
+        inputElement.disabled = false;
+      } else if (type === 'modal') {
+        labelElement.textContent = 'Modal configuration';
+        inputElement.placeholder = '(Configured below)';
+        inputElement.type = 'text';
+        inputElement.value = 'Modal confirmation';
+        inputElement.disabled = true;
+      } else if (type === 'inline') {
+        labelElement.textContent = 'In-line configuration';
+        inputElement.placeholder = '(Configured below)';
+        inputElement.type = 'text';
+        inputElement.value = 'In-line confirmation';
+        inputElement.disabled = true;
+      } else if (type === 'download') {
+        labelElement.textContent = labelElement.id === 'default-label' ? 'Choose default download file *' : 'Alternate download file *';
+        inputElement.placeholder = 'Select .zip file...';
+        inputElement.type = 'file';
+        inputElement.accept = '.zip';
+      }
+    }
+
+    // Update default confirmation target label
+    if (confirmationTarget && defaultLabel && defaultInput) {
+      confirmationTarget.addEventListener('change', function() {
+        updateInputForTarget(confirmationTarget, defaultLabel, defaultInput);
+        toggleInlineConfigPanel();
+      });
+      // Initialize on page load
+      toggleInlineConfigPanel();
+    }
+
+    // Update alternate confirmation target label
+    if (alternateConfirmationTarget && alternateConfirmationUrl) {
+      alternateConfirmationTarget.addEventListener('change', function() {
+        var altLabel = document.querySelector('#alternate-confirmation-group label');
+        if (altLabel) {
+          updateInputForTarget(alternateConfirmationTarget, altLabel.childNodes[0], alternateConfirmationUrl);
+        }
+      });
+    }
+
+    // Toggle inline and modal configuration panel visibility
+    function toggleInlineConfigPanel() {
+      var inlinePanel = document.getElementById('inline-config-panel');
+      var modalPanel = document.getElementById('modal-config-panel');
+      var defaultPageGroup = document.getElementById('default-page-group');
+      
+      if (!confirmationTarget || !defaultPageGroup) return;
+      
+      var targetValue = confirmationTarget.value;
+      var isInline = targetValue === 'inline';
+      var isModal = targetValue === 'modal';
+      
+      if (inlinePanel) inlinePanel.style.display = isInline ? 'block' : 'none';
+      if (modalPanel) modalPanel.style.display = isModal ? 'block' : 'none';
+      defaultPageGroup.style.display = (isInline || isModal) ? 'none' : 'block';
+    }
+
+    // Handle personalized content toggle
+    var enablePersonalizedCheckbox = document.getElementById('inline-enable-personalized');
+    var personalizedContentConfig = document.getElementById('personalized-content-config');
+    
+    if (enablePersonalizedCheckbox && personalizedContentConfig) {
+      enablePersonalizedCheckbox.addEventListener('change', function() {
+        personalizedContentConfig.style.display = enablePersonalizedCheckbox.checked ? 'block' : 'none';
+      });
+    }
+
+    console.debug('[confirmation] Initialization complete');
+  })();
+
+  // === Inline Confirmation Form Submission Handler ===
+  (function() {
+    console.debug('[inline-confirmation] Initializing submission handler');
+
+    function getInlineConfirmationConfig() {
+      return {
+        target: document.getElementById('confirmation-target') ? document.getElementById('confirmation-target').value : 'redirect',
+        title: document.getElementById('inline-title') ? document.getElementById('inline-title').value : 'Thank you!',
+        description: document.getElementById('inline-description') ? document.getElementById('inline-description').value : 'We\'ve received your information and will be in touch soon.',
+        icon: document.getElementById('inline-icon') ? document.getElementById('inline-icon').value : 'checkmark',
+        animation: document.getElementById('inline-animation') ? document.getElementById('inline-animation').value : 'fade-in',
+        bgStyle: document.getElementById('inline-bg-style') ? document.getElementById('inline-bg-style').value : 'light',
+        autoHide: parseInt(document.getElementById('inline-auto-hide') ? document.getElementById('inline-auto-hide').value : '0', 10),
+        showClose: document.getElementById('inline-show-close') ? document.getElementById('inline-show-close').checked : true,
+        hideForm: document.getElementById('inline-hide-form') ? document.getElementById('inline-hide-form').checked : true,
+        scrollTo: document.getElementById('inline-scroll-to') ? document.getElementById('inline-scroll-to').checked : true,
+        primaryCta: {
+          text: document.getElementById('inline-cta-primary-text') ? document.getElementById('inline-cta-primary-text').value : '',
+          url: document.getElementById('inline-cta-primary-url') ? document.getElementById('inline-cta-primary-url').value : ''
+        },
+        secondaryCta: {
+          text: document.getElementById('inline-cta-secondary-text') ? document.getElementById('inline-cta-secondary-text').value : '',
+          url: document.getElementById('inline-cta-secondary-url') ? document.getElementById('inline-cta-secondary-url').value : ''
+        },
+        personalized: {
+          enabled: document.getElementById('inline-enable-personalized') ? document.getElementById('inline-enable-personalized').checked : false,
+          type: document.getElementById('inline-content-type') ? document.getElementById('inline-content-type').value : 'articles',
+          count: parseInt(document.getElementById('inline-content-count') ? document.getElementById('inline-content-count').value : '3', 10),
+          tag: document.getElementById('inline-analytics-tag') ? document.getElementById('inline-analytics-tag').value : '',
+          heading: document.getElementById('inline-content-heading') ? document.getElementById('inline-content-heading').value : 'You might also be interested in'
+        }
+      };
+    }
+
+    function getModalConfirmationConfig() {
+      return {
+        target: document.getElementById('confirmation-target') ? document.getElementById('confirmation-target').value : 'redirect',
+        title: document.getElementById('modal-title') ? document.getElementById('modal-title').value : 'Thank you!',
+        description: document.getElementById('modal-description') ? document.getElementById('modal-description').value : 'We\'ve received your information and will be in touch soon.',
+        icon: document.getElementById('modal-icon') ? document.getElementById('modal-icon').value : 'checkmark',
+        animation: document.getElementById('modal-animation') ? document.getElementById('modal-animation').value : 'fade-in',
+        size: document.getElementById('modal-size') ? document.getElementById('modal-size').value : 'medium',
+        autoClose: parseInt(document.getElementById('modal-auto-close') ? document.getElementById('modal-auto-close').value : '0', 10),
+        showClose: document.getElementById('modal-show-close') ? document.getElementById('modal-show-close').checked : true,
+        closeOnOverlay: document.getElementById('modal-close-on-overlay') ? document.getElementById('modal-close-on-overlay').checked : true,
+        primaryCta: {
+          text: document.getElementById('modal-cta-primary-text') ? document.getElementById('modal-cta-primary-text').value : '',
+          url: document.getElementById('modal-cta-primary-url') ? document.getElementById('modal-cta-primary-url').value : ''
+        },
+        secondaryCta: {
+          text: document.getElementById('modal-cta-secondary-text') ? document.getElementById('modal-cta-secondary-text').value : '',
+          url: document.getElementById('modal-cta-secondary-url') ? document.getElementById('modal-cta-secondary-url').value : ''
+        }
+      };
+    }
+
+    function getIconHtml(iconType) {
+      var icons = {
+        'checkmark': '✓',
+        'checkmark-circle': '✓',
+        'thumbs-up': '👍',
+        'party': '🎉',
+        'star': '⭐',
+        'none': ''
+      };
+      return icons[iconType] || icons['checkmark'];
+    }
+
+    function generatePersonalizedContent(config) {
+      var items = [];
+      var contentTypeLabels = {
+        'articles': 'Article',
+        'products': 'Product',
+        'services': 'Service',
+        'solutions': 'Solution',
+        'case-studies': 'Case Study',
+        'videos': 'Video',
+        'webinars': 'Webinar',
+        'tools': 'Tool'
+      };
+
+      var typeLabel = contentTypeLabels[config.type] || 'Resource';
+
+      for (var i = 0; i < config.count; i++) {
+        items.push({
+          title: typeLabel + ' ' + (i + 1) + ': Sample Title',
+          description: 'This is a sample ' + config.type.replace('-', ' ') + ' that would be loaded based on the analytics tag: ' + (config.tag || 'default')
+        });
+      }
+
+      return items;
+    }
+
+    function createInlineConfirmation(formContainer, config) {
+      // Check if confirmation already exists and remove it
+      var existing = formContainer.querySelector('.inline-confirmation');
+      if (existing) {
+        existing.remove();
+      }
+
+      var confirmation = document.createElement('div');
+      confirmation.className = 'inline-confirmation bg-' + config.bgStyle;
+      
+      // Add animation class
+      if (config.animation !== 'none') {
+        confirmation.classList.add('animation-' + config.animation);
+      }
+
+      var html = '';
+
+      // Close button
+      if (config.showClose) {
+        html += '<button class="inline-confirmation-close" onclick="this.parentElement.remove()">×</button>';
+      }
+
+      // Icon
+      var iconHtml = getIconHtml(config.icon);
+      if (iconHtml) {
+        html += '<div class="inline-confirmation-icon">' + iconHtml + '</div>';
+      }
+
+      // Title and description
+      html += '<h2 class="inline-confirmation-title">' + config.title + '</h2>';
+      if (config.description) {
+        html += '<p class="inline-confirmation-description">' + config.description + '</p>';
+      }
+
+      // CTAs
+      var hasCtas = (config.primaryCta.text && config.primaryCta.url) || (config.secondaryCta.text && config.secondaryCta.url);
+      if (hasCtas) {
+        html += '<div class="inline-confirmation-ctas">';
+        
+        if (config.primaryCta.text && config.primaryCta.url) {
+          html += '<a href="' + config.primaryCta.url + '" class="inline-confirmation-cta primary">' + config.primaryCta.text + '</a>';
+        }
+        
+        if (config.secondaryCta.text && config.secondaryCta.url) {
+          html += '<a href="' + config.secondaryCta.url + '" class="inline-confirmation-cta secondary">' + config.secondaryCta.text + '</a>';
+        }
+        
+        html += '</div>';
+      }
+
+      // Personalized content
+      if (config.personalized.enabled) {
+        html += '<div class="inline-confirmation-personalized">';
+        html += '<h3 class="inline-confirmation-personalized-heading">' + config.personalized.heading + '</h3>';
+        html += '<div class="inline-confirmation-personalized-grid">';
+        
+        var items = generatePersonalizedContent(config.personalized);
+        items.forEach(function(item) {
+          html += '<div class="personalized-item">';
+          html += '<h4 class="personalized-item-title">' + item.title + '</h4>';
+          html += '<p class="personalized-item-description">' + item.description + '</p>';
+          html += '</div>';
+        });
+        
+        html += '</div>';
+        html += '</div>';
+      }
+
+      confirmation.innerHTML = html;
+      
+      return confirmation;
+    }
+
+    function createModalConfirmation(config) {
+      // Check if modal overlay already exists and remove it
+      var existing = document.querySelector('.modal-confirmation-overlay');
+      if (existing) {
+        existing.remove();
+      }
+
+      var overlay = document.createElement('div');
+      overlay.className = 'modal-confirmation-overlay';
+      
+      var modal = document.createElement('div');
+      modal.className = 'modal-confirmation size-' + config.size;
+      
+      // Add animation class
+      if (config.animation !== 'none') {
+        modal.classList.add('animation-' + config.animation);
+      }
+
+      var html = '';
+
+      // Close button
+      if (config.showClose) {
+        html += '<button class="modal-confirmation-close">×</button>';
+      }
+
+      // Icon
+      var iconHtml = getIconHtml(config.icon);
+      if (iconHtml) {
+        html += '<div class="modal-confirmation-icon">' + iconHtml + '</div>';
+      }
+
+      // Title and description
+      html += '<h2 class="modal-confirmation-title">' + config.title + '</h2>';
+      if (config.description) {
+        html += '<p class="modal-confirmation-description">' + config.description + '</p>';
+      }
+
+      // CTAs
+      var hasCtas = (config.primaryCta.text && config.primaryCta.url) || config.secondaryCta.text;
+      if (hasCtas) {
+        html += '<div class="modal-confirmation-ctas">';
+        
+        if (config.primaryCta.text && config.primaryCta.url) {
+          html += '<a href="' + config.primaryCta.url + '" class="modal-confirmation-cta primary">' + config.primaryCta.text + '</a>';
+        }
+        
+        if (config.secondaryCta.text) {
+          if (config.secondaryCta.url) {
+            html += '<a href="' + config.secondaryCta.url + '" class="modal-confirmation-cta secondary">' + config.secondaryCta.text + '</a>';
+          } else {
+            // No URL means close button
+            html += '<button class="modal-confirmation-cta secondary">' + config.secondaryCta.text + '</button>';
+          }
+        }
+        
+        html += '</div>';
+      }
+
+      modal.innerHTML = html;
+      overlay.appendChild(modal);
+      
+      return overlay;
+    }
+
+    function showModalConfirmation(config) {
+      console.debug('[modal-confirmation] Showing modal confirmation');
+      
+      var modalOverlay = createModalConfirmation(config);
+      document.body.appendChild(modalOverlay);
+
+      // Close handlers
+      var closeModal = function() {
+        modalOverlay.classList.remove('visible');
+        setTimeout(function() {
+          modalOverlay.remove();
+        }, 300);
+      };
+
+      // Close button handler
+      var closeBtn = modalOverlay.querySelector('.modal-confirmation-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+      }
+
+      // Secondary CTA close handler (if no URL)
+      var secondaryBtns = modalOverlay.querySelectorAll('.modal-confirmation-cta.secondary');
+      secondaryBtns.forEach(function(btn) {
+        if (btn.tagName === 'BUTTON') {
+          btn.addEventListener('click', closeModal);
+        }
+      });
+
+      // Close on overlay click
+      if (config.closeOnOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+          if (e.target === modalOverlay) {
+            closeModal();
+          }
+        });
+      }
+
+      // Show the modal with a slight delay for animation
+      setTimeout(function() {
+        modalOverlay.classList.add('visible');
+      }, 10);
+
+      // Auto-close if configured
+      if (config.autoClose > 0) {
+        setTimeout(closeModal, config.autoClose * 1000);
+      }
+
+      // ESC key to close
+      var escHandler = function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+          document.removeEventListener('keydown', escHandler);
+        }
+      };
+      document.addEventListener('keydown', escHandler);
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      
+      var form = event.target;
+      var config = getInlineConfirmationConfig();
+      
+      // Only show inline confirmation if target is 'inline'
+      if (config.target !== 'inline') {
+        console.debug('[inline-confirmation] Target is not inline, skipping');
+        return;
+      }
+
+      console.debug('[inline-confirmation] Showing inline confirmation');
+      
+      // Find the form container
+      var formContainer = form.closest('.form-preview, .published-form-wrap, .site-inline-wrap');
+      if (!formContainer) {
+        formContainer = form.parentElement;
+      }
+
+      // Hide the form if configured
+      if (config.hideForm) {
+        form.style.display = 'none';
+      }
+
+      // Create and insert the confirmation
+      var confirmation = createInlineConfirmation(formContainer, config);
+      
+      // Insert after the form
+      if (form.nextSibling) {
+        formContainer.insertBefore(confirmation, form.nextSibling);
+      } else {
+        formContainer.appendChild(confirmation);
+      }
+
+      // Show the confirmation with a slight delay for animation
+      setTimeout(function() {
+        confirmation.classList.add('visible');
+      }, 10);
+
+      // Scroll to confirmation if configured
+      if (config.scrollTo) {
+        setTimeout(function() {
+          confirmation.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+      }
+
+      // Auto-hide if configured
+      if (config.autoHide > 0) {
+        setTimeout(function() {
+          confirmation.classList.add('hidden');
+          setTimeout(function() {
+            confirmation.remove();
+            if (config.hideForm) {
+              form.style.display = '';
+            }
+          }, 500);
+        }, config.autoHide * 1000);
+      }
+    }
+
+    // Attach submit handler to all forms in preview areas
+    function attachFormHandlers() {
+      var forms = document.querySelectorAll('.form-preview form, .published-form-wrap form, .site-inline-wrap form');
+      forms.forEach(function(form) {
+        // Remove existing listener if any
+        form.removeEventListener('submit', handleFormSubmit);
+        // Add new listener
+        form.addEventListener('submit', handleFormSubmit);
+      });
+
+      // Also attach click handlers to submit buttons (for buttons outside forms)
+      var submitButtons = document.querySelectorAll(
+        '#preview-submit-btn, #inline-submit-btn, #published-submit-btn, ' +
+        '.btn-exp-submit:not([id*="next"]):not([id*="back"])'
+      );
+      
+      submitButtons.forEach(function(btn) {
+        btn.removeEventListener('click', handleButtonClick);
+        btn.addEventListener('click', handleButtonClick);
+      });
+    }
+
+    function handleButtonClick(event) {
+      var button = event.target;
+      var targetType = document.getElementById('confirmation-target') ? document.getElementById('confirmation-target').value : 'redirect';
+      
+      // Only show confirmation if target is 'inline' or 'modal'
+      if (targetType !== 'inline' && targetType !== 'modal') {
+        console.debug('[confirmation] Target is not inline or modal, skipping button click');
+        return;
+      }
+
+      event.preventDefault();
+      console.debug('[confirmation] Submit button clicked, showing ' + targetType + ' confirmation');
+      
+      if (targetType === 'modal') {
+        var modalConfig = getModalConfirmationConfig();
+        showModalConfirmation(modalConfig);
+      } else if (targetType === 'inline') {
+        var inlineConfig = getInlineConfirmationConfig();
+        
+        // Find the form container
+        var formContainer = button.closest('.form-preview, .published-form-wrap, .site-inline-wrap, .preview-box');
+        if (!formContainer) {
+          formContainer = button.closest('.form-preview') || document.getElementById('preview');
+        }
+        if (!formContainer) {
+          formContainer = button.parentElement;
+        }
+
+        // Find the form element to hide
+        var form = formContainer.querySelector('form') || formContainer.querySelector('.form-preview');
+
+        // Hide the form if configured
+        if (inlineConfig.hideForm && form) {
+          form.style.display = 'none';
+        }
+
+        // Also hide the submit button itself and wizard footer
+        button.style.display = 'none';
+        var wizardFooter = formContainer.querySelector('.wizard-footer');
+        if (wizardFooter) {
+          wizardFooter.style.display = 'none';
+        }
+
+        // Create and insert the confirmation
+        var confirmation = createInlineConfirmation(formContainer, inlineConfig);
+        
+        // Insert at the end of the container
+        formContainer.appendChild(confirmation);
+
+        // Show the confirmation with a slight delay for animation
+        setTimeout(function() {
+          confirmation.classList.add('visible');
+        }, 10);
+
+        // Scroll to confirmation if configured
+        if (inlineConfig.scrollTo) {
+          setTimeout(function() {
+            confirmation.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 100);
+        }
+
+        // Auto-hide if configured
+        if (inlineConfig.autoHide > 0) {
+          setTimeout(function() {
+            confirmation.classList.add('hidden');
+            setTimeout(function() {
+              confirmation.remove();
+              if (inlineConfig.hideForm && form) {
+                form.style.display = '';
+              }
+              button.style.display = '';
+              if (wizardFooter) {
+                wizardFooter.style.display = '';
+              }
+            }, 500);
+          }, inlineConfig.autoHide * 1000);
+        }
+      }
+    }
+
+    // Attach handlers on page load
+    attachFormHandlers();
+
+    // Re-attach handlers when preview is updated
+    // This ensures the handlers work after forms are re-rendered
+    var originalRenderPreview = window.renderPreview;
+    if (originalRenderPreview) {
+      window.renderPreview = function() {
+        originalRenderPreview.apply(this, arguments);
+        setTimeout(attachFormHandlers, 100);
+      };
+    }
+
+    console.debug('[inline-confirmation] Submission handler initialized');
+  })();
 </script>
 </body>
 </html>
